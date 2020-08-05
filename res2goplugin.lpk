@@ -14,7 +14,7 @@
     </CompilerOptions>
     <Description Value="res2go "/>
     <Version Major="1" Release="2"/>
-    <Files Count="5">
+    <Files Count="6">
       <Item1>
         <Filename Value="res2gomain.pas"/>
         <HasRegisterProc Value="True"/>
@@ -36,7 +36,16 @@
         <Filename Value="ugolang.pas"/>
         <UnitName Value="ugolang"/>
       </Item5>
+      <Item6>
+        <Filename Value="res2goresources.pas"/>
+        <UnitName Value="res2goResources"/>
+      </Item6>
     </Files>
+    <i18n>
+      <EnableI18N Value="True"/>
+      <OutDir Value="languages"/>
+      <EnableI18NForLFM Value="True"/>
+    </i18n>
     <RequiredPkgs Count="1">
       <Item1>
         <PackageName Value="IDEIntf"/>

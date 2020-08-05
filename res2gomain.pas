@@ -26,6 +26,7 @@ uses
   FormEditingIntf,
   TypInfo,
   usupports,
+  res2goresources,
   LResources;
 
 type

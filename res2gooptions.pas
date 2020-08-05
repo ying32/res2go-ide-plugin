@@ -18,6 +18,7 @@ uses
   LazIDEIntf,
   ProjectIntf,
   ProjectResourcesIntf,
+  res2goresources,
   Laz2_XMLCfg;
 
 type
@@ -183,6 +184,10 @@ end;
 constructor TRes2goOptionsFrame.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  chkEanbledConvert.Caption:=rsEnabledConvert;
+  chkUseOriginalFileName.Caption:=rsUseOriginalFileName;
+  lblOutputPath.EditLabel.Caption:=rsOutputPath;
+  Label1.Caption:=rsOutputPathEg;
 end;
 
 destructor TRes2goOptionsFrame.Destroy;

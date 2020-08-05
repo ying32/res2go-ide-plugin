@@ -12,9 +12,9 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
     Left = 16
     Height = 21
     Top = 24
-    Width = 84
+    Width = 120
     AutoSize = False
-    Caption = '启用转换'
+    Caption = 'Enabled Convert'
     TabOrder = 0
   end
   object lblOutputPath: TLabeledEdit
@@ -23,8 +23,8 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
     Top = 56
     Width = 400
     EditLabel.Height = 17
-    EditLabel.Width = 68
-    EditLabel.Caption = '输出路径：  '
+    EditLabel.Width = 72
+    EditLabel.Caption = 'Output Path:'
     EditLabel.ParentColor = False
     LabelPosition = lpLeft
     TabOrder = 1
@@ -32,18 +32,18 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   object Label1: TLabel
     Left = 88
     Height = 17
-    Top = 96
-    Width = 262
-    Caption = '以工程目录为准，即$(ProjectPath)+OutputPath'
+    Top = 93
+    Width = 180
+    Caption = 'eg:  $(ProjectPath)+OutputPath'
     ParentColor = False
   end
   object chkUseOriginalFileName: TCheckBox
-    Left = 128
+    Left = 184
     Height = 21
     Top = 24
-    Width = 112
+    Width = 176
     AutoSize = False
-    Caption = '使用原始单元名'
+    Caption = 'Use Original File Name'
     TabOrder = 2
   end
 end

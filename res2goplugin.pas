@@ -8,7 +8,8 @@ unit res2goplugin;
 interface
 
 uses
-  res2gomain, res2goOptions, usupports, ugolang, LazarusPackageIntf;
+  res2gomain, res2goOptions, usupports, ugolang, res2goResources, 
+  LazarusPackageIntf;
 
 implementation
 

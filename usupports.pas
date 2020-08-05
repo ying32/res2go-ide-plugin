@@ -32,10 +32,7 @@ const
   PrivateFiledsFlagStr = '//::private::';
   PrivateFiledsStr = 'T%sFields';
 
-resourceString
-  rsMsgTransformFile = '转换文件：%s'; // Transform file: %s
-
-  function IsZhLang: Boolean;
+  //function IsZhLang: Boolean;
   function IsSupportsComponent(AClass: string): Boolean;
   procedure CtlWriteln(AUrgency: TMessageLineUrgency; const AFmt: string; AArgs: array of const); overload;
   procedure CtlWriteln(AUrgency: TMessageLineUrgency; const AFmt: string); overload;
@@ -63,28 +60,28 @@ var
   "zh-SG":  4100, // 简体
   "zh-TW":  1028, // 繁体
 }
-function IsZhLang: Boolean;
-{$IFDEF WINDOWS}
-const
-   Langs:array[0..4] of Integer = (2052, 3076, 5124, 4100, 1028);
-{$ELSE}
-const
-   Langs:array[0..4] of string = ('zh_CN', 'zh_HK', 'zh_MO', 'zh_SG', 'zh_TW');
-{$ENDIF}
-var
-  I: Integer;
-begin
-  Result := False;
-  for I := 0 to High(Langs) do
-  begin
-  {$IFDEF MSWINDOWS}
-    if Langs[I] = SysLocale.DefaultLCID then
-  {$ELSE}
-    if Pos(Langs[I], GetEnvironmentVariable('LANG')) <> -1 then
-  {$ENDIF}
-      Exit(True);
-  end;
-end;
+//function IsZhLang: Boolean;
+//{$IFDEF WINDOWS}
+//const
+//   Langs:array[0..4] of Integer = (2052, 3076, 5124, 4100, 1028);
+//{$ELSE}
+//const
+//   Langs:array[0..4] of string = ('zh_CN', 'zh_HK', 'zh_MO', 'zh_SG', 'zh_TW');
+//{$ENDIF}
+//var
+//  I: Integer;
+//begin
+//  Result := False;
+//  for I := 0 to High(Langs) do
+//  begin
+//  {$IFDEF MSWINDOWS}
+//    if Langs[I] = SysLocale.DefaultLCID then
+//  {$ELSE}
+//    if Pos(Langs[I], GetEnvironmentVariable('LANG')) <> -1 then
+//  {$ENDIF}
+//      Exit(True);
+//  end;
+//end;
 
 procedure CtlWriteln(AUrgency: TMessageLineUrgency; const AFmt: string; AArgs: array of const);
 begin
