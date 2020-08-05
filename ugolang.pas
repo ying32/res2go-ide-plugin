@@ -337,7 +337,7 @@ begin
 
       if not IsSupportsComponent(C.ClassName) then
       begin
-        CtlWriteln(mluError, rsComponentIsNotSupported, [C.Name, C.ClassName]);
+        CtlWriteln(mluError, rsComponentIsNotSupported, [LFormName + '.' + C.Name, C.ClassName]);
         //Exit;
       end;
 
@@ -345,7 +345,7 @@ begin
         Continue;
       if CharInSet(C.Name[1], ['a'..'z', '_']) then
       begin
-        CtlWriteln(mluWarning, rsComponentMustBeCapitalizedFirstToBeExported, [C.Name, C.ClassName]);
+        CtlWriteln(mluWarning, rsComponentMustBeCapitalizedFirstToBeExported, [LFormName + '.' + C.Name, C.ClassName]);
         Continue;
       end;
       //CtlWriteln('%s: %s', [C^.Name, C^.ClassName]);
