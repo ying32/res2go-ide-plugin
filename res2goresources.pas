@@ -18,7 +18,7 @@ resourceString
   rsEnabledConvert = 'Enabled Convert';
   rsUseOriginalFileName = 'Use Original File Name';
   rsOutputPath = 'Output Path:';
-  rsOutputPathEg = 'eg:  $(ProjectPath)+OutputPath';
+  rsOutputPathEg = 'eg:  /code';
 
 implementation
 

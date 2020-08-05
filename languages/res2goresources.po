@@ -30,7 +30,7 @@ msgid "Output Path:"
 msgstr ""
 
 #: res2goresources.rsoutputpatheg
-msgid "eg:  $(ProjectPath)+OutputPath"
+msgid "eg:  /code"
 msgstr ""
 
 #: res2goresources.rsregisterformresources

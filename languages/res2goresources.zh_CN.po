@@ -30,8 +30,8 @@ msgid "Output Path:"
 msgstr "输出路径："
 
 #: res2goresources.rsoutputpatheg
-msgid "eg:  $(ProjectPath)+OutputPath"
-msgstr "示例：$(ProjectPath)+OutputPath"
+msgid "eg:  /code"
+msgstr "示例：/code"
 
 #: res2goresources.rsregisterformresources
 msgid "Register Form Resources"
