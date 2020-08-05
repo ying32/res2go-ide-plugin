@@ -13,7 +13,7 @@
       </SearchPaths>
     </CompilerOptions>
     <Description Value="res2go "/>
-    <Version Major="1" Release="1"/>
+    <Version Major="1" Release="2"/>
     <Files Count="5">
       <Item1>
         <Filename Value="res2gomain.pas"/>
@@ -25,16 +25,16 @@
         <UnitName Value="res2goplugin"/>
       </Item2>
       <Item3>
-        <Filename Value="supportsComponents.inc"/>
-        <Type Value="Include"/>
-      </Item3>
-      <Item4>
-        <Filename Value="uresourceformtogo.pas"/>
-        <UnitName Value="uresourceformtogo"/>
-      </Item4>
-      <Item5>
         <Filename Value="res2gooptions.pas"/>
         <UnitName Value="res2goOptions"/>
+      </Item3>
+      <Item4>
+        <Filename Value="usupports.pas"/>
+        <UnitName Value="usupports"/>
+      </Item4>
+      <Item5>
+        <Filename Value="ugolang.pas"/>
+        <UnitName Value="ugolang"/>
       </Item5>
     </Files>
     <RequiredPkgs Count="1">

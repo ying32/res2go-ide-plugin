@@ -18,19 +18,36 @@ uses
   UITypes,
   StdCtrls,
   Buttons,
+  Forms,
   LazIDEIntf,
   ProjectIntf,
   IDEMsgIntf,
-  IDEExternToolIntf;
+  IDEExternToolIntf,
+  FormEditingIntf,
+  TypInfo,
+  usupports,
+  LResources;
 
 type
+
 
   { TMyIDEIntf }
 
   TMyIDEIntf = class
   private
+    FEvents: array of TEventItem;
+
     FEnabledCovert: Boolean;
     FOutputPath: string;
+
+    function GetReadOutputPath: string;
+    procedure SaveComponents(ADesigner: TIDesigner; AOutPath: string);
+    procedure OnWriteMethodProperty(Writer: TWriter; Instance: TPersistent; PropInfo: PPropInfo;
+      const MethodValue, DefMethodValue: TMethod; var Handled: boolean);
+
+
+    procedure CheckAndCreateDir;
+
     function GetProjectPath: string;
   public
     constructor Create;
@@ -42,6 +59,18 @@ type
     property EnabledCovert: Boolean read FEnabledCovert write FEnabledCovert;
     property OutputPath: string read FOutputPath write FOutputPath;
     property ProjectPath: string read GetProjectPath;
+    property ReadOutputPath: string read GetReadOutputPath;
+  end;
+
+  // JITForms.pas
+  TFakeJITMethod = class
+  private
+    FMethod: TMethod;
+    FOwner: TObject;//TJITMethods;
+    FTheClass: TClass;
+    FTheMethodName: shortstring;
+  public
+    property TheMethodName: shortstring read FTheMethodName;
   end;
 
 
@@ -53,65 +82,7 @@ procedure Register;
 implementation
 
 uses
-  uresourceformtogo;
-
-
-procedure ClearMsg;
-begin
-  if Assigned(IDEMessagesWindow) then
-    IDEMessagesWindow.Clear;
-end;
-
-function CombinePath(Path1, Path2: string): string;
-var
-  LC: Char;
-begin
-  if Path2 <> '' then
-  begin
-    if Path2.StartsWith(SysUtils.PathDelim) then
-      Path2 := Copy(Path2, 2, Length(Path2) - 1);
-    if not Path2.EndsWith(PathDelim) then
-      Path2 := Copy(Path2, 1, Length(Path2) - 1);
-  end;
-  Result := Path1 + Path2;
-end;
-
-procedure ConvertFile(const AInputFile: string);
-var
-  LOutPath, LExt, LLfmFileName: string;
-begin
-  try
-    //Outputdebugstring(PChar('cv File: ' + AInputFile));
-    LOutPath := MyIDEIntf.ProjectPath + MyIDEIntf.OutputPath;
-
-    if not SysUtils.DirectoryExists(LOutPath) then
-      SysUtils.CreateDir(LOutPath);
-    LExt := ExtractFileExt(AInputFile);
-    if SameText(LExt, '.lpr') then
-    begin
-     if IsZhLang then
-       CtlWriteln(mluNone, '转换文件：%s', [AInputFile])
-     else
-       CtlWriteln(mluNone, 'Transform file: %s', [AInputFile]);
-      ProjectFileToMainDotGo(AInputFile, LOutPath)
-    end
-    else if SameText(LExt, '.pas') then
-    begin
-      LLfmFileName := ExtractFilePath(AInputFile) + ChangeExtName(AInputFile, '.lfm');
-      if FileExists(LLfmFileName) then
-      begin
-        if IsZhLang then
-          CtlWriteln(mluNone, '转换文件：%s', [LLfmFileName])
-        else
-          CtlWriteln(mluNone, 'Transform file: %s', [LLfmFileName]);
-        ResouceFormToGo(LLfmFileName, LOutPath);
-      end;
-    end;
-  except
-    on E: Exception do
-      //OutputDebugString(PChar('Exception: ' + E.Message));
-  end;
-end;
+  ugolang;
 
 procedure Register;
 begin
@@ -140,13 +111,114 @@ end;
 
 { TMyIDEIntf }
 
+procedure TMyIDEIntf.SaveComponents(ADesigner: TIDesigner; AOutPath: string);
+var
+  LWriter: TWriter;
+  LDestroyDriver: Boolean;
+  LStream: TMemoryStream;
+  LGfmFileName: string;
+begin
+  if Assigned(ADesigner) and Assigned(ADesigner.LookupRoot) then
+  begin
+    LStream := TMemoryStream.Create;
+    try
+      LDestroyDriver := False;
+      LWriter := nil;
+      try
+        // 清空事件
+        SetLength(FEvents, 0);
+        LWriter := CreateLRSWriter(LStream, LDestroyDriver);
+        LWriter.OnWriteMethodProperty := @OnWriteMethodProperty;
+        LWriter.WriteDescendent(ADesigner.LookupRoot, nil);
+      finally
+        if LDestroyDriver then
+          LWriter.Driver.Free;
+        LWriter.Free;
+      end;
+      Golang.SaveToFile(ReadOutputPath, ADesigner.LookupRoot, FEvents, LStream);
+      // 保存gfm文件
+      LGfmFileName := AOutPath + ADesigner.LookupRoot.Name + '.gfm';
+      LStream.Position := 0;
+      LStream.SaveToFile(LGfmFileName);
+    finally
+      LStream.Free;
+    end;
+  end;
+end;
+
+function TMyIDEIntf.GetReadOutputPath: string;
+begin
+  Result := ProjectPath + OutputPath;
+end;
+
+// FakeIsJITMethod
+function IsJITMethod(const aMethod: TMethod): boolean;
+begin
+  Result:= (aMethod.Data <> nil) and (aMethod.Code = nil) and (TObject(aMethod.Data).ClassType.ClassNameIs('TJITMethod'));
+end;
+
+procedure TMyIDEIntf.OnWriteMethodProperty(Writer: TWriter;
+  Instance: TPersistent; PropInfo: PPropInfo; const MethodValue,
+  DefMethodValue: TMethod; var Handled: boolean);
+
+  function GetTypeName: string;
+  begin
+    Result := PropInfo^.Name;
+    if Result.StartsWith('On') then
+      Result := Copy(Result, 3, Length(Result) - 2);
+  end;
+
+var
+  LMethodName, LComponentName: string;
+  LEvent: TEventItem;
+begin
+  Handled := False;
+  if (DefMethodValue.Data = MethodValue.Data) and (DefMethodValue.Code = MethodValue.Code) then
+    Exit;
+
+  LMethodName := '';
+  LComponentName := '';
+  if Instance is TComponent then
+     LComponentName := TComponent(Instance).Name;
+
+  if IsJITMethod(MethodValue) then
+    LMethodName := TFakeJITMethod(MethodValue.Data).TheMethodName
+  else if MethodValue.Code <> nil then
+  begin
+    LMethodName := Writer.LookupRoot.MethodName(MethodValue.Code);
+    if LMethodName = '' then
+      Exit;
+  end;
+  if LMethodName = '' then
+    Exit;
+
+  LEvent.InstanceName := LComponentName;
+  LEvent.EventName := LMethodName;
+  LEvent.EventTypeName := GetTypeName;
+  LEvent.EventParams := Golang.ToEventString(PropInfo);
+
+  SetLength(FEvents, Length(FEvents) + 1);
+  FEvents[High(FEvents)] := LEvent;
+
+  if Assigned(PropInfo) then
+    Logs('LComponentName%s, LMethodName=%s, Event.Name=%s', [LComponentName, LMethodName, PropInfo^.Name]);
+end;
+
+procedure TMyIDEIntf.CheckAndCreateDir;
+var
+  LOutPath: string;
+begin
+  LOutPath := ProjectPath + OutputPath;
+  if not SysUtils.DirectoryExists(LOutPath) then
+    SysUtils.CreateDir(LOutPath);
+end;
+
 function TMyIDEIntf.GetProjectPath: string;
 begin
   Result := '';
   if Assigned(LazarusIDE.ActiveProject) then
     Result := ExtractFilePath(LazarusIDE.ActiveProject.ProjectInfoFile);
 end;
-
 
 constructor TMyIDEIntf.Create;
 begin
@@ -155,31 +227,50 @@ end;
 
 destructor TMyIDEIntf.Destroy;
 begin
-  inherited Destroy;
+     inherited Destroy;
 end;
 
 function TMyIDEIntf.onSaveAll(Sender: TObject): TModalResult;
 var
   I: Integer;
+  LExt, LFileName: string;
 begin
-  if Assigned(MyIDEIntf) and MyIDEIntf.EnabledCovert then
+  if EnabledCovert then
   begin
     ClearMsg;
+    CheckAndCreateDir;
     for I := 0 to LazarusIDE.ActiveProject.FileCount - 1 do
-      ConvertFile(LazarusIDE.ActiveProject.Files[I].Filename);
+    begin
+      LFileName := LazarusIDE.ActiveProject.Files[I].FileName;
+      LExt := ExtractFileExt(LFileName);
+      if SameText(LExt, '.lpr') then
+      begin
+        CtlWriteln(mluNone, rsMsgTransformFile, [LFileName]);
+        GoLang.ConvertProjectFile(LFileName, ReadOutputPath);
+        Break;
+      end
+    end;
   end;
   Result := mrOk;
 end;
 
 function TMyIDEIntf.onSaveEditorFile(Sender: TObject; aFile: TLazProjectFile;
   SaveStep: TSaveEditorFileStep; TargetFilename: string): TModalResult;
+var
+  LDesigner: TIDesigner;
 begin
   if SaveStep = sefsAfterWrite then
   begin
-    if Assigned(MyIDEIntf) and MyIDEIntf.EnabledCovert then
+    if EnabledCovert then
     begin
       ClearMsg;
-      ConvertFile(TargetFilename);
+      CheckAndCreateDir;
+      LDesigner := LazarusIDE.GetDesignerWithProjectFile(aFile, False);
+      if Assigned(LDesigner) and Assigned(LDesigner.LookupRoot) then
+      begin
+        Logs('onSaveEditorFile lookupRoot: %s', [LDesigner.LookupRoot.Name]);
+        SaveComponents(LDesigner, ReadOutputPath);
+      end;
     end;
   end;
   Result := mrOk;

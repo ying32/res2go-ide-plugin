@@ -12,9 +12,6 @@ unit res2goOptions;
 interface
 
 uses
-{$ifdef windows}
-  Windows,
-{$endif}
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls,
   IDEOptionsIntf,
   IDEOptEditorIntf,
@@ -80,24 +77,12 @@ implementation
 {$R *.lfm}
 
 uses
-  res2gomain;
+  res2gomain, uSupports;
 
 const
   ProjectOptionsRes2go = ProjectOptionsMisc + 500;
 
-procedure Logs(const AFmt: string; AArgs: array of const);  overload;
-begin
-{$ifdef windows}
-  OutputDebugStringW(PWideChar(UnicodeString(Format(AFmt, AArgs))));
-{$endif}
-end;
 
-procedure Logs(const AStr: string); overload;
-begin
-{$ifdef windows}
-  Logs('%s', [AStr]);
-{$endif}
-end;
 
 { TProjectRes2goRes }
 
@@ -140,7 +125,7 @@ begin
   begin
     MyIDEIntf.EnabledCovert := Enabled;
     MyIDEIntf.OutputPath := OutputPath;
-    Logs('--TProjectRes2goRes.ReadFromProjectFile: ');
+    //Logs('--TProjectRes2goRes.ReadFromProjectFile: ');
   end;
 end;
 
