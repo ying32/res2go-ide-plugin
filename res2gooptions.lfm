@@ -1,0 +1,41 @@
+object Res2goOptionsFrame: TRes2goOptionsFrame
+  Left = 0
+  Height = 247
+  Top = 0
+  Width = 510
+  ClientHeight = 247
+  ClientWidth = 510
+  TabOrder = 0
+  DesignLeft = 1186
+  DesignTop = 435
+  object CheckBox1: TCheckBox
+    Left = 16
+    Height = 21
+    Top = 24
+    Width = 84
+    Alignment = taLeftJustify
+    AutoSize = False
+    Caption = 'Enabled'
+    TabOrder = 0
+  end
+  object LabeledEdit1: TLabeledEdit
+    Left = 88
+    Height = 25
+    Top = 56
+    Width = 312
+    EditLabel.Height = 17
+    EditLabel.Width = 72
+    EditLabel.Caption = 'Output Path:'
+    EditLabel.ParentColor = False
+    LabelPosition = lpLeft
+    TabOrder = 1
+  end
+  object Label1: TLabel
+    Left = 88
+    Height = 17
+    Top = 96
+    Width = 262
+    Caption = '以工程目录为准，即$(ProjectPath)+OutputPath'
+    ParentColor = False
+  end
+end
