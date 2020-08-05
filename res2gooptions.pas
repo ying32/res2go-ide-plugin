@@ -42,8 +42,10 @@ type
   private
     FEnabled: Boolean;
     FOutputPath: string;
+    FUseOriginalFileName: Boolean;
     procedure SetEnabled(AValue: Boolean);
     procedure SetOutputPath(AValue: string);
+    procedure SetUseOriginalFileName(AValue: Boolean);
   public
     function UpdateResources(AResources: TAbstractProjectResources; const {%H-}MainFilename: string): Boolean; override;
     procedure WriteToProjectFile(AConfig: {TXMLConfig}TObject; const Path: String); override;
@@ -51,14 +53,16 @@ type
   public
     property Enabled: Boolean read FEnabled write SetEnabled;
     property OutputPath: string read FOutputPath write SetOutputPath;
+    property UseOriginalFileName: Boolean read FUseOriginalFileName write SetUseOriginalFileName;
   end;
 
   { TRes2goOptionsFrame }
 
   TRes2goOptionsFrame = class(TAbstractIDEOptionsEditor)
-    CheckBox1: TCheckBox;
+    chkEanbledConvert: TCheckBox;
+    chkUseOriginalFileName: TCheckBox;
     Label1: TLabel;
-    LabeledEdit1: TLabeledEdit;
+    lblOutputPath: TLabeledEdit;
   private
     FRes: TProjectRes2goRes;
   public
@@ -100,6 +104,13 @@ begin
   Self.Modified:=True;
 end;
 
+procedure TProjectRes2goRes.SetUseOriginalFileName(AValue: Boolean);
+begin
+  if FUseOriginalFileName=AValue then Exit;
+  FUseOriginalFileName:=AValue;
+  Self.Modified:=True;
+end;
+
 function TProjectRes2goRes.UpdateResources(
   AResources: TAbstractProjectResources; const MainFilename: string): Boolean;
 begin
@@ -113,18 +124,25 @@ begin
   begin
     SetDeleteValue(Path+'Res2go/Enabled/Value', Enabled, False);
     SetDeleteValue(Path+'Res2go/OutputPath/Value', OutputPath, '');
+    SetDeleteValue(Path+'Res2go/UseOriginalFileName/Value', UseOriginalFileName, False);
   end;
 end;
 
 procedure TProjectRes2goRes.ReadFromProjectFile(AConfig: TObject;
   const Path: String);
 begin
-  Enabled := TXMLConfig(AConfig).GetValue(Path+'Res2go/Enabled/Value', False);
-  OutputPath := TXMLConfig(AConfig).GetValue(Path+'Res2go/OutputPath/Value', '');
+  with TXMLConfig(AConfig) do
+  begin
+    Enabled := GetValue(Path+'Res2go/Enabled/Value', False);
+    OutputPath := GetValue(Path+'Res2go/OutputPath/Value', '');
+    UseOriginalFileName := GetValue(Path+'Res2go/UseOriginalFileName/Value', False);
+  end;
+
   if Assigned(MyIDEIntf) then
   begin
     MyIDEIntf.EnabledCovert := Enabled;
     MyIDEIntf.OutputPath := OutputPath;
+    MyIDEIntf.UseOriginalFileName := UseOriginalFileName;
     //Logs('--TProjectRes2goRes.ReadFromProjectFile: ');
   end;
 end;
@@ -196,8 +214,11 @@ begin
     begin
       MyIDEIntf.EnabledCovert := LRes.Enabled;
       MyIDEIntf.OutputPath := LRes.OutputPath;
-      CheckBox1.Checked := MyIDEIntf.EnabledCovert;
-      LabeledEdit1.Text := MyIDEIntf.OutputPath;
+      MyIDEIntf.UseOriginalFileName:= LRes.UseOriginalFileName;
+
+      chkEanbledConvert.Checked := MyIDEIntf.EnabledCovert;
+      lblOutputPath.Text := MyIDEIntf.OutputPath;
+      ChkUseOriginalFileName.Checked:= MyIDEIntf.UseOriginalFileName;
     end;
   end;
 end;
@@ -211,10 +232,13 @@ begin
     LRes := TProjectRes2goRes(TAbstractProjectResources(LazarusIDE.ActiveProject.Resources).Resource[TProjectRes2goRes]);
     if Assigned(LRes) then
     begin
-      MyIDEIntf.EnabledCovert := CheckBox1.Checked;
-      MyIDEIntf.OutputPath:= LabeledEdit1.Text;
+      MyIDEIntf.EnabledCovert := chkEanbledConvert.Checked;
+      MyIDEIntf.OutputPath:= lblOutputPath.Text;
+      MyIDEIntf.UseOriginalFileName:=chkUseOriginalFileName.Checked;
+
       LRes.OutputPath := MyIDEIntf.OutputPath;
       LRes.Enabled := MyIDEIntf.EnabledCovert;
+      LRes.UseOriginalFileName := MyIDEIntf.UseOriginalFileName;
     end;
   end;
 end;

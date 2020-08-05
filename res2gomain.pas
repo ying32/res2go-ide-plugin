@@ -39,9 +39,10 @@ type
 
     FEnabledCovert: Boolean;
     FOutputPath: string;
+    FUseOriginalFileName: Boolean;
 
     function GetReadOutputPath: string;
-    procedure SaveComponents(ADesigner: TIDesigner; AOutPath: string);
+    procedure SaveComponents(ADesigner: TIDesigner; AUnitFileName, AOutPath: string);
     procedure OnWriteMethodProperty(Writer: TWriter; Instance: TPersistent; PropInfo: PPropInfo;
       const MethodValue, DefMethodValue: TMethod; var Handled: boolean);
 
@@ -58,6 +59,7 @@ type
 
     property EnabledCovert: Boolean read FEnabledCovert write FEnabledCovert;
     property OutputPath: string read FOutputPath write FOutputPath;
+    property UseOriginalFileName: Boolean read FUseOriginalFileName write FUseOriginalFileName;
     property ProjectPath: string read GetProjectPath;
     property ReadOutputPath: string read GetReadOutputPath;
   end;
@@ -111,12 +113,13 @@ end;
 
 { TMyIDEIntf }
 
-procedure TMyIDEIntf.SaveComponents(ADesigner: TIDesigner; AOutPath: string);
+procedure TMyIDEIntf.SaveComponents(ADesigner: TIDesigner; AUnitFileName,
+  AOutPath: string);
 var
   LWriter: TWriter;
   LDestroyDriver: Boolean;
   LStream: TMemoryStream;
-  LGfmFileName: string;
+  LGfmFileName, LGoFileName: string;
 begin
   if Assigned(ADesigner) and Assigned(ADesigner.LookupRoot) then
   begin
@@ -135,9 +138,23 @@ begin
           LWriter.Driver.Free;
         LWriter.Free;
       end;
-      Golang.SaveToFile(ReadOutputPath, ADesigner.LookupRoot, FEvents, LStream);
+      // 保存go文件及impl文件
+      LGoFileName := ReadOutputPath;
+      if Self.UseOriginalFileName then
+        LGoFileName += AUnitFileName
+      else
+        LGoFileName += ADesigner.LookupRoot.Name;
+      LGoFileName += '.go';
+
+      Golang.SaveToFile(LGoFileName, ADesigner.LookupRoot, FEvents, LStream);
+
       // 保存gfm文件
-      LGfmFileName := AOutPath + ADesigner.LookupRoot.Name + '.gfm';
+      LGfmFileName := AOutPath;
+      if Self.UseOriginalFileName then
+        LGfmFileName += AUnitFileName
+      else
+        LGfmFileName += ADesigner.LookupRoot.Name;
+      LGfmFileName += '.gfm';
       LStream.Position := 0;
       LStream.SaveToFile(LGfmFileName);
     finally
@@ -269,7 +286,7 @@ begin
       if Assigned(LDesigner) and Assigned(LDesigner.LookupRoot) then
       begin
         Logs('onSaveEditorFile lookupRoot: %s', [LDesigner.LookupRoot.Name]);
-        SaveComponents(LDesigner, ReadOutputPath);
+        SaveComponents(LDesigner, GetFileNameWithoutExt(TargetFilename),  ReadOutputPath);
       end;
     end;
   end;

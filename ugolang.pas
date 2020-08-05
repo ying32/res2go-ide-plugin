@@ -35,7 +35,7 @@ type
     procedure ConvertProjectFile(const AFileName, AOutPath: string);
     // golang
     function ToEventString(AProp: PPropInfo): string;
-    procedure SaveToFile(AOutPath: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream);
+    procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream);
   end;
 
 var
@@ -272,7 +272,7 @@ begin
   end;
 end;
 
-procedure TGoLang.SaveToFile(AOutPath: string; ARoot: TComponent;
+procedure TGoLang.SaveToFile(AFileName: string; ARoot: TComponent;
   AEvents: array of TEventItem; AMem: TMemoryStream);
 var
   LStrStream, LBuffer: TStringStream;
@@ -304,7 +304,7 @@ var
 var
   I, LMaxLen: integer;
   C: TComponent;
-  LVarName, LFormName, LFileName, LTempName: string;
+  LVarName, LFormName, LTempName: string;
   LItem: TEventItem;
   LFindEvent: boolean;
   LReadEventName: string;
@@ -456,16 +456,16 @@ begin
     //if AOrigFileName <> '' then
     //  LFileName := AOutPath + AOrigFileName + '.go'
     //else
-      LFileName := AOutPath + LFormName + '.go';
+    //  LFileName := AOutPath + LFormName + '.go';
     LStrStream.WriteString(LLines.Text);
-    LStrStream.SaveToFile(LFileName);
+    LStrStream.SaveToFile(AFileName);
   finally
     LLines.Free;
     LBuffer.Free;
     LStrStream.Free;
   end;
   // 一定创建，因为多加了个
-  CreateImplFile(LFileName, AEvents, LFormName);
+  CreateImplFile(AFileName, AEvents, LFormName);
 end;
 
 procedure TGoLang.CreateImplFile(AFileName: string;
@@ -479,9 +479,7 @@ var
   I: integer;
 begin
   LImplFileName := AFileName;
-  Insert('Impl', LImplFileName, Length(LImplFileName) -
-    Length(ExtractFileExt(AFileName)) + 1);
-
+  Insert('Impl', LImplFileName, Length(LImplFileName) - Length(ExtractFileExt(AFileName)) + 1);
   LStream := TStringStream.Create('');
   try
     LExists := FileExists(LImplFileName);
