@@ -34,7 +34,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
     Height = 17
     Top = 93
     Width = 60
-    Caption = 'eg:  /code'
+    Caption = 'eg:  code/'
     ParentColor = False
   end
   object chkUseOriginalFileName: TCheckBox

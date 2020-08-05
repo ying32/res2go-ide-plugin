@@ -147,6 +147,7 @@ begin
         LGoFileName += ADesigner.LookupRoot.Name;
       LGoFileName += '.go';
 
+      //CtlWriteln(mluNone, rsMsgTransformFile, [ExtractFileName(AUnitFileName)]);
       Golang.SaveToFile(LGoFileName, ADesigner.LookupRoot, FEvents, LStream);
 
       // 保存gfm文件
@@ -166,7 +167,7 @@ end;
 
 function TMyIDEIntf.GetReadOutputPath: string;
 begin
-  Result := ProjectPath + OutputPath;
+  Result := ProjectPath + OutputPath + PathDelim;
 end;
 
 // FakeIsJITMethod
@@ -218,8 +219,8 @@ begin
   SetLength(FEvents, Length(FEvents) + 1);
   FEvents[High(FEvents)] := LEvent;
 
-  if Assigned(PropInfo) then
-    Logs('LComponentName%s, LMethodName=%s, Event.Name=%s', [LComponentName, LMethodName, PropInfo^.Name]);
+  //if Assigned(PropInfo) then
+  //  Logs('LComponentName%s, LMethodName=%s, Event.Name=%s', [LComponentName, LMethodName, PropInfo^.Name]);
 end;
 
 procedure TMyIDEIntf.CheckAndCreateDir;
@@ -263,7 +264,7 @@ begin
       LExt := ExtractFileExt(LFileName);
       if SameText(LExt, '.lpr') then
       begin
-        CtlWriteln(mluNone, rsMsgTransformFile, [LFileName]);
+        CtlWriteln(mluNone, rsMsgTransformFile, [ExtractFileName(LFileName)]);
         GoLang.ConvertProjectFile(LFileName, ReadOutputPath);
         Break;
       end
@@ -286,7 +287,8 @@ begin
       LDesigner := LazarusIDE.GetDesignerWithProjectFile(aFile, False);
       if Assigned(LDesigner) and Assigned(LDesigner.LookupRoot) then
       begin
-        Logs('onSaveEditorFile lookupRoot: %s', [LDesigner.LookupRoot.Name]);
+        //Logs('onSaveEditorFile lookupRoot: %s', [LDesigner.LookupRoot.Name]);
+
         SaveComponents(LDesigner, GetFileNameWithoutExt(TargetFilename),  ReadOutputPath);
       end;
     end;
