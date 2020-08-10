@@ -372,12 +372,8 @@ begin
         WLine(Format('var _ = vcl.RegisterFormResource(%s, &%s)',
           [LFormName, LVarName]));
     end;
-    //if AOrigFileName <> '' then
-    //  LFileName := AOutPath + AOrigFileName + '.go'
-    //else
-    //  LFileName := AOutPath + LFormName + '.go';
     LStrStream.WriteString(LLines.Text);
-    LStrStream.SaveToFile(AFileName);
+    LStrStream.SaveToFile(AFileName + '.go');
   finally
     LLines.Free;
     LBuffer.Free;
@@ -387,21 +383,19 @@ begin
   CreateImplFile(AFileName, AEvents, LFormName);
 end;
 
-procedure TGoLang.CreateImplFile(AFileName: string;
-  AEvents: array of TEventItem; AFormName: string);
+procedure TGoLang.CreateImplFile(AFileName: string; AEvents: array of TEventItem; AFormName: string);
 var
-  LImplFileName, LMName, LTemp, LCode, LPrivateName, LFlags: string;
+  LMName, LTemp, LCode, LPrivateName, LFlags: string;
   LItem: TEventItem;
   LStream: TStringStream;
   LExists, LB: boolean;
   LListStr: TStringList;
   I: integer;
 begin
-  LImplFileName := AFileName;
-  Insert('Impl', LImplFileName, Length(LImplFileName) - Length(ExtractFileExt(AFileName)) + 1);
+  AFileName += 'Impl.go';
   LStream := TStringStream.Create('');
   try
-    LExists := FileExists(LImplFileName);
+    LExists := FileExists(AFileName);
     LListStr := TStringList.Create;
     try
       // 不存在，则添加
@@ -420,7 +414,7 @@ begin
       else
       begin
         // 反之加载
-        LStream.LoadFromFile(LImplFileName);
+        LStream.LoadFromFile(AFileName);
         LTemp := LStream.DataString;
         LListStr.Text := LTemp;
 
@@ -521,7 +515,7 @@ begin
     finally
       LListStr.Free;
     end;
-    LStream.SaveToFile(LImplFileName);
+    LStream.SaveToFile(AFileName);
   finally
     LStream.Free;
   end;

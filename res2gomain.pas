@@ -27,6 +27,7 @@ uses
   TypInfo,
   usupports,
   res2goresources,
+  uLangBase,
   LResources;
 
 type
@@ -44,6 +45,7 @@ type
     FSaveGfmFile: Boolean;
     FUseOriginalFileName: Boolean;
 
+    function GetLang: TLangBase;
     function GetReadOutputPath: string;
     procedure SaveComponents(ADesigner: TIDesigner; AUnitFileName, AOutPath: string);
     procedure OnWriteMethodProperty(Writer: TWriter; Instance: TPersistent; PropInfo: PPropInfo;
@@ -66,6 +68,8 @@ type
     property SaveGfmFile: Boolean read FSaveGfmFile write FSaveGfmFile;
     property OutLang: TOutLang read FOutLang write FOutLang;
 
+
+    property Lang: TLangBase read GetLang;
 
     property ProjectPath: string read GetProjectPath;
     property ReadOutputPath: string read GetReadOutputPath;
@@ -126,7 +130,7 @@ var
   LWriter: TWriter;
   LDestroyDriver: Boolean;
   LStream: TMemoryStream;
-  LGfmFileName, LGoFileName: string;
+  LGfmFileName, LOutFileName: string;
 begin
   if Assigned(ADesigner) and Assigned(ADesigner.LookupRoot) then
   begin
@@ -146,28 +150,14 @@ begin
         LWriter.Free;
       end;
       // 保存go文件及impl文件
-      LGoFileName := ReadOutputPath;
+      LOutFileName := ReadOutputPath;
       if Self.UseOriginalFileName then
-        LGoFileName += AUnitFileName
+        LOutFileName += AUnitFileName
       else
-        LGoFileName += ADesigner.LookupRoot.Name;
+        LOutFileName += ADesigner.LookupRoot.Name;
 
-      case OutLang of
-         olGo:
-           begin
-             LGoFileName += '.go';
-             //CtlWriteln(mluNone, rsMsgTransformFile, [ExtractFileName(AUnitFileName)]);
-             Golang.SaveToFile(LGoFileName, ADesigner.LookupRoot, FEvents, LStream);
-           end;
-         olNim:
-           begin
-
-           end;
-         olRust:
-           begin
-
-           end;
-      end;
+      // 保存文件
+      Lang.SaveToFile(LOutFileName, ADesigner.LookupRoot, FEvents, LStream);
 
       // 保存gfm文件
       if Self.SaveGfmFile then
@@ -190,6 +180,15 @@ end;
 function TMyIDEIntf.GetReadOutputPath: string;
 begin
   Result := ProjectPath + OutputPath + PathDelim;
+end;
+
+function TMyIDEIntf.GetLang: TLangBase;
+begin
+  Result := GoLang;
+  case Self.FOutLang of
+     olRust: ;
+     olNim: ;
+  end;
 end;
 
 // FakeIsJITMethod
@@ -236,13 +235,7 @@ begin
   LEvent.InstanceName := LComponentName;
   LEvent.EventName := LMethodName;
   LEvent.EventTypeName := GetTypeName;
-
-  case OutLang of
-    olGo: LEvent.EventParams := Golang.ToEventString(PropInfo);
-    olNim:;
-    olRust:;
-  end;
-
+  LEvent.EventParams := Lang.ToEventString(PropInfo);
 
   SetLength(FEvents, Length(FEvents) + 1);
   FEvents[High(FEvents)] := LEvent;
@@ -293,7 +286,7 @@ begin
       if SameText(LExt, '.lpr') then
       begin
         CtlWriteln(mluNone, rsMsgTransformFile, [ExtractFileName(LFileName)]);
-        GoLang.ConvertProjectFile(LFileName, ReadOutputPath);
+        Lang.ConvertProjectFile(LFileName, ReadOutputPath);
         Break;
       end
     end;
