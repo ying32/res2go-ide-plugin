@@ -11,7 +11,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   object chkEanbledConvert: TCheckBox
     Left = 16
     Height = 21
-    Top = 24
+    Top = 23
     Width = 120
     AutoSize = False
     Caption = 'Enabled Convert'
@@ -38,12 +38,44 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
     ParentColor = False
   end
   object chkUseOriginalFileName: TCheckBox
-    Left = 184
+    Left = 164
     Height = 21
-    Top = 24
-    Width = 176
+    Top = 23
+    Width = 163
     AutoSize = False
     Caption = 'Use Original File Name'
     TabOrder = 2
+  end
+  object chkSaveGfmFile: TCheckBox
+    Left = 358
+    Height = 21
+    Top = 23
+    Width = 99
+    Caption = 'Save gfm File'
+    TabOrder = 3
+  end
+  object lblOutLang: TLabel
+    Left = 16
+    Height = 17
+    Top = 140
+    Width = 56
+    Caption = 'Out Lang:'
+    ParentColor = False
+  end
+  object cbbLangs: TComboBox
+    Left = 88
+    Height = 25
+    Top = 136
+    Width = 132
+    ItemHeight = 17
+    ItemIndex = 0
+    Items.Strings = (
+      'Go'
+      'Nim'
+      'Rust'
+    )
+    Style = csDropDownList
+    TabOrder = 4
+    Text = 'Go'
   end
 end

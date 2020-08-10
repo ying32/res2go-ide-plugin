@@ -19,50 +19,47 @@ uses
   ProjectIntf,
   ProjectResourcesIntf,
   res2goresources,
-  Laz2_XMLCfg;
+  Laz2_XMLCfg,
+  uSupports;
 
 type
 
-  { TRes2goIDEOptions }
-
-  //TRes2goIDEOptions = class(TAbstractIDEProjectOptions)
-  //private
-  //  FProject: TLazProject;
-  //public
-  //  constructor Create(AProject: TLazProject);
-  //  destructor Destroy; override;
-  //  function GetProject: TLazProject; override;
-  //  class function GetInstance: TAbstractIDEOptions; override;
-  //  class function GetGroupCaption: string; override;
-  //  property Project: TLazProject read FProject;
-  //end;
 
   { TProjectRes2goRes }
 
   TProjectRes2goRes = class(TAbstractProjectResource)
   private
     FEnabled: Boolean;
+    FOutLang: TOutLang;
     FOutputPath: string;
+    FSaveGfmFile: Boolean;
     FUseOriginalFileName: Boolean;
     procedure SetEnabled(AValue: Boolean);
+    procedure SetOutLang(AValue: TOutLang);
     procedure SetOutputPath(AValue: string);
+    procedure SetSaveGfmFile(AValue: Boolean);
     procedure SetUseOriginalFileName(AValue: Boolean);
   public
     function UpdateResources(AResources: TAbstractProjectResources; const {%H-}MainFilename: string): Boolean; override;
-    procedure WriteToProjectFile(AConfig: {TXMLConfig}TObject; const Path: String); override;
-    procedure ReadFromProjectFile(AConfig: {TXMLConfig}TObject; const Path: String); override;
+    procedure WriteToProjectFile(AConfig: TObject; const Path: String); override;
+    procedure ReadFromProjectFile(AConfig: TObject; const Path: String); override;
   public
     property Enabled: Boolean read FEnabled write SetEnabled;
     property OutputPath: string read FOutputPath write SetOutputPath;
     property UseOriginalFileName: Boolean read FUseOriginalFileName write SetUseOriginalFileName;
+    property SaveGfmFile: Boolean read FSaveGfmFile write SetSaveGfmFile;
+    property OutLang: TOutLang read FOutLang write SetOutLang;
   end;
 
   { TRes2goOptionsFrame }
 
   TRes2goOptionsFrame = class(TAbstractIDEOptionsEditor)
+    chkSaveGfmFile: TCheckBox;
     chkEanbledConvert: TCheckBox;
     chkUseOriginalFileName: TCheckBox;
+    cbbLangs: TComboBox;
     Label1: TLabel;
+    lblOutLang: TLabel;
     lblOutputPath: TLabeledEdit;
   private
     FRes: TProjectRes2goRes;
@@ -82,7 +79,7 @@ implementation
 {$R *.lfm}
 
 uses
-  res2gomain, uSupports;
+  res2gomain;
 
 const
   ProjectOptionsRes2go = ProjectOptionsMisc + 500;
@@ -98,10 +95,24 @@ begin
   Self.Modified:=True;
 end;
 
+procedure TProjectRes2goRes.SetOutLang(AValue: TOutLang);
+begin
+  if FOutLang=AValue then Exit;
+  FOutLang:=AValue;
+  Self.Modified:=True;
+end;
+
 procedure TProjectRes2goRes.SetOutputPath(AValue: string);
 begin
   if FOutputPath=AValue then Exit;
   FOutputPath:=AValue;
+  Self.Modified:=True;
+end;
+
+procedure TProjectRes2goRes.SetSaveGfmFile(AValue: Boolean);
+begin
+  if FSaveGfmFile=AValue then Exit;
+  FSaveGfmFile:=AValue;
   Self.Modified:=True;
 end;
 
@@ -126,6 +137,8 @@ begin
     SetDeleteValue(Path+'Res2go/Enabled/Value', Enabled, False);
     SetDeleteValue(Path+'Res2go/OutputPath/Value', OutputPath, '');
     SetDeleteValue(Path+'Res2go/UseOriginalFileName/Value', UseOriginalFileName, False);
+    SetDeleteValue(Path+'Res2go/SaveGfmFile/Value', SaveGfmFile, False);
+    SetDeleteValue(Path+'Res2go/OutLang/Value', Integer(OutLang), 0);
   end;
 end;
 
@@ -137,6 +150,8 @@ begin
     Enabled := GetValue(Path+'Res2go/Enabled/Value', False);
     OutputPath := GetValue(Path+'Res2go/OutputPath/Value', '');
     UseOriginalFileName := GetValue(Path+'Res2go/UseOriginalFileName/Value', False);
+    SaveGfmFile := GetValue(Path+'Res2go/SaveGfmFile/Value', False);
+    OutLang := TOutLang(GetValue(Path+'Res2go/SaveGfmFile/Value', 0));
   end;
 
   if Assigned(MyIDEIntf) then
@@ -144,50 +159,27 @@ begin
     MyIDEIntf.EnabledCovert := Enabled;
     MyIDEIntf.OutputPath := OutputPath;
     MyIDEIntf.UseOriginalFileName := UseOriginalFileName;
+    MyIDEIntf.SaveGfmFile := SaveGfmFile;
+    MyIDEIntf.OutLang:=OutLang;
     //Logs('--TProjectRes2goRes.ReadFromProjectFile: ');
   end;
 end;
 
-{ TRes2goIDEOptions }
 
-//constructor TRes2goIDEOptions.Create(AProject: TLazProject);
-//begin
-//  inherited Create;
-//  FProject := AProject;
-//end;
-//
-//destructor TRes2goIDEOptions.Destroy;
-//begin
-//  inherited Destroy;
-//end;
-//
-//function TRes2goIDEOptions.GetProject: TLazProject;
-//begin
-//  Result:=FProject;
-//end;
-//
-//class function TRes2goIDEOptions.GetInstance: TAbstractIDEOptions;
-//begin
-//  if (LazarusIDE <> nil) and (LazarusIDE.ActiveProject <> nil) then
-//    Result := LazarusIDE.ActiveProject.FIDEOptions
-//  else
-//    Result := nil;
-//end;
-
-//class function TRes2goIDEOptions.GetGroupCaption: string;
-//begin
-//  Result := 'res2go Options';
-//end;
 
 { TRes2goOptionsFrame }
+
+
 
 constructor TRes2goOptionsFrame.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   chkEanbledConvert.Caption:=rsEnabledConvert;
   chkUseOriginalFileName.Caption:=rsUseOriginalFileName;
+  chkSaveGfmFile.Caption := rsSaveGfmFile;
   lblOutputPath.EditLabel.Caption:=rsOutputPath;
   Label1.Caption:=rsOutputPathEg;
+  lblOutLang.Caption:=rsOutLang;
 end;
 
 destructor TRes2goOptionsFrame.Destroy;
@@ -220,10 +212,14 @@ begin
       MyIDEIntf.EnabledCovert := LRes.Enabled;
       MyIDEIntf.OutputPath := LRes.OutputPath;
       MyIDEIntf.UseOriginalFileName:= LRes.UseOriginalFileName;
+      MyIDEIntf.SaveGfmFile := LRes.SaveGfmFile;
+      MyIDEIntf.OutLang := LRes.OutLang;
 
       chkEanbledConvert.Checked := MyIDEIntf.EnabledCovert;
       lblOutputPath.Text := MyIDEIntf.OutputPath;
       ChkUseOriginalFileName.Checked:= MyIDEIntf.UseOriginalFileName;
+      ChkSaveGfmFile.Checked := MyIDEIntf.SaveGfmFile;
+      cbbLangs.ItemIndex:=Integer(MyIDEIntf.OutLang);
     end;
   end;
 end;
@@ -240,10 +236,14 @@ begin
       MyIDEIntf.EnabledCovert := chkEanbledConvert.Checked;
       MyIDEIntf.OutputPath:= lblOutputPath.Text;
       MyIDEIntf.UseOriginalFileName:=chkUseOriginalFileName.Checked;
+      MyIDEIntf.SaveGfmFile := chkSaveGfmFile.Checked;
+      MyIDEIntf.OutLang:=TOutLang(cbbLangs.ItemIndex);
 
       LRes.OutputPath := MyIDEIntf.OutputPath;
       LRes.Enabled := MyIDEIntf.EnabledCovert;
       LRes.UseOriginalFileName := MyIDEIntf.UseOriginalFileName;
+      LRes.SaveGfmFile := MyIDEIntf.SaveGfmFile;
+      LRes.OutLang:=MyIDEIntf.OutLang;
     end;
   end;
 end;

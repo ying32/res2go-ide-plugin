@@ -25,6 +25,10 @@ msgstr "启用转换"
 msgid "Transform file: %s "
 msgstr "转换文件：%s"
 
+#: res2goresources.rsoutlang
+msgid "Out Lang:"
+msgstr "输出语言："
+
 #: res2goresources.rsoutputpath
 msgid "Output Path:"
 msgstr "输出路径："
@@ -36,6 +40,10 @@ msgstr "示例：code/"
 #: res2goresources.rsregisterformresources
 msgid "Register Form Resources"
 msgstr "注册Form资源  "
+
+#: res2goresources.rssavegfmfile
+msgid "Save gfm File"
+msgstr "保存gfm文件"
 
 #: res2goresources.rsuseoriginalfilename
 msgid "Use Original File Name"

@@ -12,30 +12,27 @@ unit ugolang;
 interface
 
 uses
-  Classes, SysUtils, StrUtils, Forms, TypInfo, uSupports, IDEExternToolIntf, res2goResources;
+  Classes, SysUtils, StrUtils, Forms, TypInfo, uSupports, IDEExternToolIntf, res2goResources, uLangBase;
 
 type
 
   { TGoLang }
 
-  TGoLang = class
+  TGoLang = class(TLangBase)
   private
     FPkgName: string;
-    FTypeLists: TTypeLists;
-    FBaseTypes: TTypeLists;
-    procedure InitTypeLists;
-    procedure InitBaseTypes;
     function ParamTypeCov(ASrc: string): string;
     function IsBaseType(AType: string): Boolean;
     function IsInterfaceType(AType: string): Boolean;
     procedure CreateImplFile(AFileName: string; AEvents: array of TEventItem; AFormName: string);
+  protected
+    procedure InitTypeLists; override;
+    procedure InitBaseTypes; override;
   public
     constructor Create;
-    destructor Destroy; override;
-    procedure ConvertProjectFile(const AFileName, AOutPath: string);
-    // golang
-    function ToEventString(AProp: PPropInfo): string;
-    procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream);
+    procedure ConvertProjectFile(const AFileName, AOutPath: string); override;
+    function ToEventString(AProp: PPropInfo): string; override;
+    procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream); override;
   end;
 
 var
@@ -52,18 +49,7 @@ uses
 constructor TGoLang.Create;
 begin
   inherited Create;
-  FTypeLists := TTypeLists.Create;
-  FBaseTypes := TTypeLists.Create;
   FPkgName := 'main';
-  InitTypeLists;
-  InitBaseTypes;
-end;
-
-destructor TGoLang.Destroy;
-begin
-  FTypeLists.Free;
-  FBaseTypes.Free;
-  inherited Destroy;
 end;
 
 procedure TGoLang.ConvertProjectFile(const AFileName, AOutPath: string);
@@ -188,84 +174,39 @@ begin
 end;
 
 function TGoLang.ToEventString(AProp: PPropInfo): string;
-
-  function FirstCaseChar(Astr: string): string;
-  begin
-    Result := Astr;
-    if Length(Result) > 0 then
-      Result[1] := LowerCase(Result[1]);
-  end;
-
 var
-  LNameArr: TStringArray;
-  LName: string;
-  LParams: string;
-  LTypeData: PTypeData;
   I: Integer;
-
-  LFlags: TParamFlags;
-  LParamName, LParamType, LCovName: string;
-  LMem: TMemoryStream;
-  LLen: Byte;
-  LFlagsStr: string;
+  LFnParam: TFnParam;
+  LCovName: string;
 begin
   Result := '';
   // 处理参数
-  if AProp <> nil then
+  I := 0;
+  for LFnParam in GetParams(AProp) do
   begin
-    LTypeData := GetTypeData(AProp^.PropType);
-    if Assigned(LTypeData) then
+    if LFnParam.Name <> '$self' then
     begin
-      LParams := '';
+      if I > 1 then
+        Result += ', ';
 
-      //mkClassProcedure,mkClassFunction
-      LMem := TMemoryStream.Create;
-      try
-        LMem.Write(LTypeData^.ParamList[0], SizeOf(LTypeData^.ParamList));
-        LMem.Position:=0;
-        for I := 0 to LTypeData^.ParamCount - 1 do
-        begin
-          LMem.Read(LFlags, SizeOf(TParamFlags));
-          // name
-          LMem.Read(LLen, 1);
-          SetLength(LParamName, LLen);
+      Result += FirstCaseChar(LFnParam.Name) + ' '; // + ' <' + LFlagsStr + '>' + ParamTypeCov(LParamType);
+      LCovName := ParamTypeCov(LFnParam.&Type);
+      if ((pfAddress in LFnParam.Flags) or (pfVar in LFnParam.Flags) or (pfOut in LFnParam.Flags)) and not IsInterfaceType(LCovName) then // 要加 * 号的
+        Result += '*';
 
-          LMem.Read(LParamName[1], LLen);
-          // type
-          LMem.Read(LLen, 1);
-          SetLength(LParamType, LLen);
-          LMem.Read(LParamType[1], LLen);
+      // 数组
+      if pfArray in LFnParam.Flags then
+        Result += '[]';
 
-          LParamName := Trim(LParamName);
-          if LParamName <> '$self' then
-          begin
+      // 包名确认
+      if pfAddress in LFnParam.Flags then
+        Result += 'vcl.'; // 包名
+      if (not IsBaseType(LCovName)) and (not (pfAddress in LFnParam.Flags)) then
+        Result += 'types.';
 
-            if I > 1 then
-            LParams := LParams + ', ';
-
-            LParams := LParams + FirstCaseChar(LParamName) + ' '; // + ' <' + LFlagsStr + '>' + ParamTypeCov(LParamType);
-            LCovName := ParamTypeCov(LParamType);
-            if ((pfAddress in LFlags) or (pfVar in LFlags) or (pfOut in LFlags)) and not IsInterfaceType(LCovName) then // 要加 * 号的
-              LParams := LParams + '*';
-
-            // 数组
-            if pfArray in LFlags then
-              LParams := LParams + '[]';
-
-            // 包名确认
-            if pfAddress in LFlags then
-              LParams := LParams + 'vcl.'; // 包名
-            if (not IsBaseType(LCovName)) and (not (pfAddress in LFlags)) then
-              LParams := LParams + 'types.';
-
-            LParams := LParams + LCovName;
-          end;
-        end;
-        Result := LParams;
-      finally
-        LMem.Free;
-      end;
+      Result += LCovName;
     end;
+    Inc(I);
   end;
 end;
 

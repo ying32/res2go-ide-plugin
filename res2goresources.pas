@@ -17,8 +17,10 @@ resourceString
   // options frame
   rsEnabledConvert = 'Enabled Convert';
   rsUseOriginalFileName = 'Use Original File Name';
+  rsSaveGfmFile = 'Save gfm File';
   rsOutputPath = 'Output Path:';
   rsOutputPathEg = 'eg:  code/';
+  rsOutLang = 'Out Lang:';
 
 implementation
 

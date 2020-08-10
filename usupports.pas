@@ -21,6 +21,8 @@ uses
 type
   TTypeLists = specialize TFPGMap<string, string>;
 
+  TOutLang = (olError=-1, olGo, olNim, olRust);
+
   TEventItem = record
     InstanceName: string;
     EventName: string;

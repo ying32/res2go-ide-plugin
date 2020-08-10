@@ -25,6 +25,10 @@ msgstr ""
 msgid "Transform file: %s "
 msgstr ""
 
+#: res2goresources.rsoutlang
+msgid "Out Lang:"
+msgstr ""
+
 #: res2goresources.rsoutputpath
 msgid "Output Path:"
 msgstr ""
@@ -35,6 +39,10 @@ msgstr ""
 
 #: res2goresources.rsregisterformresources
 msgid "Register Form Resources"
+msgstr ""
+
+#: res2goresources.rssavegfmfile
+msgid "Save gfm File"
 msgstr ""
 
 #: res2goresources.rsuseoriginalfilename

@@ -13,8 +13,8 @@
       </SearchPaths>
     </CompilerOptions>
     <Description Value="res2go "/>
-    <Version Major="1" Release="2"/>
-    <Files Count="6">
+    <Version Major="1" Release="3"/>
+    <Files Count="7">
       <Item1>
         <Filename Value="res2gomain.pas"/>
         <HasRegisterProc Value="True"/>
@@ -40,6 +40,10 @@
         <Filename Value="res2goresources.pas"/>
         <UnitName Value="res2goResources"/>
       </Item6>
+      <Item7>
+        <Filename Value="ulangbase.pas"/>
+        <UnitName Value="ulangbase"/>
+      </Item7>
     </Files>
     <i18n>
       <EnableI18N Value="True"/>

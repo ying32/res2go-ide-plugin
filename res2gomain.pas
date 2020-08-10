@@ -39,7 +39,9 @@ type
     FEvents: array of TEventItem;
 
     FEnabledCovert: Boolean;
+    FOutLang: TOutLang;
     FOutputPath: string;
+    FSaveGfmFile: Boolean;
     FUseOriginalFileName: Boolean;
 
     function GetReadOutputPath: string;
@@ -61,6 +63,10 @@ type
     property EnabledCovert: Boolean read FEnabledCovert write FEnabledCovert;
     property OutputPath: string read FOutputPath write FOutputPath;
     property UseOriginalFileName: Boolean read FUseOriginalFileName write FUseOriginalFileName;
+    property SaveGfmFile: Boolean read FSaveGfmFile write FSaveGfmFile;
+    property OutLang: TOutLang read FOutLang write FOutLang;
+
+
     property ProjectPath: string read GetProjectPath;
     property ReadOutputPath: string read GetReadOutputPath;
   end;
@@ -145,20 +151,36 @@ begin
         LGoFileName += AUnitFileName
       else
         LGoFileName += ADesigner.LookupRoot.Name;
-      LGoFileName += '.go';
 
-      //CtlWriteln(mluNone, rsMsgTransformFile, [ExtractFileName(AUnitFileName)]);
-      Golang.SaveToFile(LGoFileName, ADesigner.LookupRoot, FEvents, LStream);
+      case OutLang of
+         olGo:
+           begin
+             LGoFileName += '.go';
+             //CtlWriteln(mluNone, rsMsgTransformFile, [ExtractFileName(AUnitFileName)]);
+             Golang.SaveToFile(LGoFileName, ADesigner.LookupRoot, FEvents, LStream);
+           end;
+         olNim:
+           begin
+
+           end;
+         olRust:
+           begin
+
+           end;
+      end;
 
       // 保存gfm文件
-      LGfmFileName := AOutPath;
-      if Self.UseOriginalFileName then
-        LGfmFileName += AUnitFileName
-      else
-        LGfmFileName += ADesigner.LookupRoot.Name;
-      LGfmFileName += '.gfm';
-      LStream.Position := 0;
-      LStream.SaveToFile(LGfmFileName);
+      if Self.SaveGfmFile then
+      begin
+        LGfmFileName := AOutPath;
+        if Self.UseOriginalFileName then
+          LGfmFileName += AUnitFileName
+        else
+          LGfmFileName += ADesigner.LookupRoot.Name;
+        LGfmFileName += '.gfm';
+        LStream.Position := 0;
+        LStream.SaveToFile(LGfmFileName);
+      end;
     finally
       LStream.Free;
     end;
@@ -214,7 +236,13 @@ begin
   LEvent.InstanceName := LComponentName;
   LEvent.EventName := LMethodName;
   LEvent.EventTypeName := GetTypeName;
-  LEvent.EventParams := Golang.ToEventString(PropInfo);
+
+  case OutLang of
+    olGo: LEvent.EventParams := Golang.ToEventString(PropInfo);
+    olNim:;
+    olRust:;
+  end;
+
 
   SetLength(FEvents, Length(FEvents) + 1);
   FEvents[High(FEvents)] := LEvent;
