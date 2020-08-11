@@ -285,7 +285,7 @@ begin
       LExt := ExtractFileExt(LFileName);
       if SameText(LExt, '.lpr') then
       begin
-        CtlWriteln(mluNone, rsMsgTransformFile, [ExtractFileName(LFileName)]);
+        //CtlWriteln(mluNone, rsMsgTransformFile, [ExtractFileName(LFileName)]);
         Lang.ConvertProjectFile(LFileName, ReadOutputPath);
         Break;
       end
