@@ -1,5 +1,9 @@
 图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420
 
+v1.0.3
+
+  1、增加保存“gfm”文件选项，默认不保存。
+  2、预留输出"Rust", "Nim"语言选项（未开始编写代码）。
 
 v1.0.2
  
