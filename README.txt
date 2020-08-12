@@ -1,5 +1,8 @@
 图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420
 
+v1.0.4
+  1、增加利用Lazarus IDE完成Windows可执行文件的图标、Manifest、版本信息修改。
+
 v1.0.3
 
   1、增加保存“gfm”文件选项，默认不保存。
