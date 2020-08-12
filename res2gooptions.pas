@@ -34,11 +34,13 @@ type
     FOutputPath: string;
     FSaveGfmFile: Boolean;
     FUseOriginalFileName: Boolean;
+
     procedure SetEnabled(AValue: Boolean);
     procedure SetOutLang(AValue: TOutLang);
     procedure SetOutputPath(AValue: string);
     procedure SetSaveGfmFile(AValue: Boolean);
     procedure SetUseOriginalFileName(AValue: Boolean);
+
   public
     function UpdateResources(AResources: TAbstractProjectResources; const {%H-}MainFilename: string): Boolean; override;
     procedure WriteToProjectFile(AConfig: TObject; const Path: String); override;
@@ -61,8 +63,6 @@ type
     Label1: TLabel;
     lblOutLang: TLabel;
     lblOutputPath: TLabeledEdit;
-  private
-    FRes: TProjectRes2goRes;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -83,7 +83,6 @@ uses
 
 const
   ProjectOptionsRes2go = ProjectOptionsMisc + 500;
-
 
 
 { TProjectRes2goRes }
@@ -126,7 +125,12 @@ end;
 function TProjectRes2goRes.UpdateResources(
   AResources: TAbstractProjectResources; const MainFilename: string): Boolean;
 begin
-
+  Result := True;
+  if Assigned(MyIDEIntf) then
+  begin
+    MyIDEIntf.ReConvertRes:= True;
+    MyIDEIntf.ResFileName:=MainFilename;
+  end;
 end;
 
 procedure TProjectRes2goRes.WriteToProjectFile(AConfig: TObject;
@@ -161,15 +165,13 @@ begin
     MyIDEIntf.UseOriginalFileName := UseOriginalFileName;
     MyIDEIntf.SaveGfmFile := SaveGfmFile;
     MyIDEIntf.OutLang:=OutLang;
-    //Logs('--TProjectRes2goRes.ReadFromProjectFile: ');
   end;
 end;
 
 
 
+
 { TRes2goOptionsFrame }
-
-
 
 constructor TRes2goOptionsFrame.Create(AOwner: TComponent);
 begin

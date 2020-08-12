@@ -28,7 +28,8 @@ uses
   usupports,
   res2goresources,
   uLangBase,
-  LResources;
+  LResources,
+  process;
 
 type
 
@@ -42,6 +43,8 @@ type
     FEnabledCovert: Boolean;
     FOutLang: TOutLang;
     FOutputPath: string;
+    FReConvertRes: Boolean;
+    FResFileName: string;
     FSaveGfmFile: Boolean;
     FUseOriginalFileName: Boolean;
 
@@ -53,6 +56,8 @@ type
 
 
     procedure CheckAndCreateDir;
+    procedure ExeuteConvertRes(const AResFileName, APath: string);
+    procedure ExecuteCommand(const ACmds: array of string; AWait: Boolean);
 
     function GetProjectPath: string;
   public
@@ -73,6 +78,9 @@ type
 
     property ProjectPath: string read GetProjectPath;
     property ReadOutputPath: string read GetReadOutputPath;
+
+    property ReConvertRes: Boolean read FReConvertRes write FReConvertRes;
+    property ResFileName: string read FResFileName write FResFileName;
   end;
 
   // JITForms.pas
@@ -253,6 +261,43 @@ begin
     SysUtils.CreateDir(LOutPath);
 end;
 
+procedure TMyIDEIntf.ExeuteConvertRes(const AResFileName, APath: string);
+var
+  LProcess: TProcess;
+begin
+  if not FileExists(AResFileName) then
+    Exit;
+  ExecuteCommand([Format('windres -i "%s" -J res -o "%sdefaultRes_windows_amd64.syso" -F pe-x86-64', [AResFileName, APath]),
+                  Format('windres -i "%s" -J res -o "%sdefaultRes_windows_386.syso" -F pe-i386', [AResFileName, APath])], True);
+//windres -i project1.res -J res -o defaultRes_windows_amd64.syso -F pe-x86-64
+//windres -i project1.res -J res -o defaultRes_windows_386.syso -F pe-i386
+end;
+
+procedure TMyIDEIntf.ExecuteCommand(const ACmds: array of string; AWait: Boolean);
+var
+  LProcess: TProcess;
+  LCmd: string;
+begin
+  if Length(ACmds) = 0 then Exit;
+  LProcess := TProcess.Create(nil);
+  try
+    LProcess.Options:= [];//[poWaitOnExit{, poNewProcessGroup, poStderrToOutPut}];
+    LProcess.ShowWindow := swoHIDE;
+    for LCmd in ACmds do
+    begin
+      try
+        LProcess.CommandLine := LCmd;
+        LProcess.Execute;
+        if AWait then
+          LProcess.WaitOnExit;
+      except
+      end;
+    end;
+  finally
+    LProcess.Free;
+  end;
+end;
+
 function TMyIDEIntf.GetProjectPath: string;
 begin
   Result := '';
@@ -290,6 +335,11 @@ begin
         Break;
       end
     end;
+  end;
+  if ReConvertRes then
+  begin
+    ReConvertRes := False;
+    ExeuteConvertRes(ResFileName, ReadOutputPath);
   end;
   Result := mrOk;
 end;
