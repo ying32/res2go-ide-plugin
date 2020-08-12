@@ -2,6 +2,7 @@
 
 v1.0.4
   1、增加利用Lazarus IDE完成Windows可执行文件的图标、Manifest、版本信息修改。
+  2、main.go不再添加"winappres"包。
 
 v1.0.3
 
