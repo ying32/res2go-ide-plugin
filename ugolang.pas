@@ -86,7 +86,7 @@ begin
       LMainDotGo.Add('    "github.com/ying32/govcl/vcl"');
       // winappres
       // 总是添加此包
-        LMainDotGo.Add('    _ "github.com/ying32/govcl/pkgs/winappres"');
+        //LMainDotGo.Add('    _ "github.com/ying32/govcl/pkgs/winappres"');
       LMainDotGo.Add(')');
       LMainDotGo.Add('');
       LMainDotGo.Add('func main() {');
