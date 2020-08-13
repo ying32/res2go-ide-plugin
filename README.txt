@@ -3,6 +3,8 @@
 v1.0.5
 
   1、OutPath支持相对路径、绝对路径、Lazarus IDE宏。
+  2、修复main.go文件创建时没有添加"vcl.Application.SetMainFormOnTaskBar(true)"语句。
+  3、main.go中添加"vcl.Application.SetScaled"语句，其值取自工程选项中"Use LCL scaling(Hi-DPI)"。
 
 v1.0.4
 

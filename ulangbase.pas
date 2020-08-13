@@ -20,6 +20,8 @@ type
   TFnParams = array of TFnParam;
 
   TLangBase = class
+  private
+    FPackageName: string;
   protected
     FTypeLists: TTypeLists;
     FBaseTypes: TTypeLists;
@@ -28,10 +30,15 @@ type
     procedure InitBaseTypes; virtual; abstract;
     function GetParams(AProp: PPropInfo): TFnParams;
     function FirstCaseChar(Astr: string): string;
+
+    function IsMainPackage: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure ConvertProjectFile(const AFileName, AOutPath: string); virtual; abstract;
+
+    property PackageName: string read FPackageName write FPackageName;
+
+    procedure ConvertProjectFile(const AFileName, AOutPath: string; AUseScaled: Boolean); virtual; abstract;
     function ToEventString(AProp: PPropInfo): string; virtual; abstract;
     procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream); virtual; abstract;
   end;
@@ -112,6 +119,11 @@ begin
   Result := Astr;
   if Length(Result) > 0 then
     Result[1] := LowerCase(Result[1]);
+end;
+
+function TLangBase.IsMainPackage: Boolean;
+begin
+  Result := PackageName.Equals('main') or PackageName.IsEmpty
 end;
 
 

@@ -20,7 +20,6 @@ type
 
   TGoLang = class(TLangBase)
   private
-    FPkgName: string;
     function ParamTypeCov(ASrc: string): string;
     function IsBaseType(AType: string): Boolean;
     function IsInterfaceType(AType: string): Boolean;
@@ -30,7 +29,7 @@ type
     procedure InitBaseTypes; override;
   public
     constructor Create;
-    procedure ConvertProjectFile(const AFileName, AOutPath: string); override;
+    procedure ConvertProjectFile(const AFileName, AOutPath: string; AUseScaled: Boolean); override;
     function ToEventString(AProp: PPropInfo): string; override;
     procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream); override;
   end;
@@ -49,10 +48,20 @@ uses
 constructor TGoLang.Create;
 begin
   inherited Create;
-  FPkgName := 'main';
 end;
 
-procedure TGoLang.ConvertProjectFile(const AFileName, AOutPath: string);
+procedure TGoLang.ConvertProjectFile(const AFileName, AOutPath: string; AUseScaled: Boolean);
+
+  function UseScaledStr: string;
+  begin
+    if AUseScaled then Result := 'true' else Result := 'false';
+  end;
+
+  function ScaledStr: string;
+  begin
+    Result := '    vcl.Application.SetScaled(' + UseScaledStr + ')';
+  end;
+
 var
   LStrs, LMainDotGo: TStringList;
   S, LVarName, LFormName, LSaveFileName: string;
@@ -80,7 +89,7 @@ begin
     if not LMainFileExists then
     begin
       LMainDotGo.Add('// ' + rsAutomaticallyGeneratedByTheRes2go);
-      LMainDotGo.Add('package main');
+      LMainDotGo.Add('package main');  // main.go文件始终都必须为main
       LMainDotGo.Add('');
       LMainDotGo.Add('import (');
       LMainDotGo.Add('    "github.com/ying32/govcl/vcl"');
@@ -91,15 +100,14 @@ begin
       LMainDotGo.Add('');
       LMainDotGo.Add('func main() {');
       LMainDotGo.Add('');
+
+      LMainDotGo.Add(ScaledStr);
       LMainDotGo.Add('    vcl.Application.Initialize()');
-      if SameText(ExtractFileExt(AFileName), '.dpr') then
-        LMainDotGo.Add('    vcl.Application.SetMainFormOnTaskBar(true)');
+      LMainDotGo.Add('    vcl.Application.SetMainFormOnTaskBar(true)');
     end
     else
       // 存在则加载此文件
       LMainDotGo.LoadFromFile(LSaveFileName);
-
-    // 如果不是main包，则输出的需要加上包名
 
     for S in LStrs do
     begin
@@ -109,11 +117,14 @@ begin
         LP := S.IndexOf(',');
         LFormName := Trim(S.Substring(LP + 1, S.IndexOf(')') - LP - 1));
         LVarName := LFormName + 'Bytes';
-
         LVarName[1] := LowerCase(LVarName[1]);
+
         SetLength(LForms, Length(LForms) + 1);
-        LForms[High(LForms)] :=
-          Format('    vcl.Application.CreateForm(&%s)', [{LPkg+LVarName, }LFormName]);
+        LPkg := '';
+        if not IsMainPackage then
+          LPkg := PackageName + '.';
+
+        LForms[High(LForms)] := Format('    vcl.Application.CreateForm(&%s)', [LPkg + LFormName]);
         // main.go文件不存在则直接添加
         if not LMainFileExists then
           LMainDotGo.Add(LForms[High(LForms)]);
@@ -133,6 +144,10 @@ begin
 
       for I := 0 to LMainDotGo.Count - 1 do
       begin
+        // 绽放的
+        if LMainDotGo[I].Trim.StartsWith('vcl.Application.SetScaled') then
+          LMainDotGo[I] := ScaledStr;
+
         // 找初始语句
         if LMainDotGo[I].Trim.StartsWith('vcl.Application.Initialize') then
         begin
@@ -254,7 +269,7 @@ begin
   LLines := TStringList.Create;
   try
     WLine('// ' + rsAutomaticallyGeneratedByTheRes2goDoNotEdit);
-    WLine('package ' + FPkgName);
+    WLine('package ' + PackageName);
     WLine;
     WLine('import (');
     WLine('    "github.com/ying32/govcl/vcl"');
@@ -334,8 +349,8 @@ begin
       LVarName := LFormName + 'Bytes';
 
       // 包名不为main时，起始不变为小写。
-      if FPkgName = 'main' then
-        LVarName[1] := LowerCase(LVarName[1]);
+      //if PackageName.Equals('main') or PackageName.IsEmpty then
+      LVarName[1] := LowerCase(LVarName[1]);
 
       if not LIsFrame then
       begin
@@ -402,7 +417,7 @@ begin
       if not LExists then
       begin
         LListStr.Add('');
-        LListStr.Add('package ' + FPkgName);
+        LListStr.Add('package ' + PackageName);
         LListStr.Add('');
         if Length(AEvents) > 0 then
         begin

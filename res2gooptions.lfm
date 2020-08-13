@@ -5,6 +5,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   Width = 510
   ClientHeight = 247
   ClientWidth = 510
+  OnClick = FrameClick
   TabOrder = 0
   DesignLeft = 1186
   DesignTop = 435
@@ -77,5 +78,18 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
     Style = csDropDownList
     TabOrder = 4
     Text = 'Go'
+  end
+  object lblPkgName: TLabeledEdit
+    Left = 344
+    Height = 25
+    Top = 136
+    Width = 144
+    EditLabel.Height = 17
+    EditLabel.Width = 100
+    EditLabel.Caption = 'Package Name：'
+    EditLabel.ParentColor = False
+    LabelPosition = lpLeft
+    TabOrder = 5
+    Text = 'main'
   end
 end

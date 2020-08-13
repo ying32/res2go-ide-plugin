@@ -32,12 +32,14 @@ type
     FEnabled: Boolean;
     FOutLang: TOutLang;
     FOutputPath: string;
+    FPakcageName: string;
     FSaveGfmFile: Boolean;
     FUseOriginalFileName: Boolean;
 
     procedure SetEnabled(AValue: Boolean);
     procedure SetOutLang(AValue: TOutLang);
     procedure SetOutputPath(AValue: string);
+    procedure SetPackageName(AValue: string);
     procedure SetSaveGfmFile(AValue: Boolean);
     procedure SetUseOriginalFileName(AValue: Boolean);
 
@@ -51,6 +53,7 @@ type
     property UseOriginalFileName: Boolean read FUseOriginalFileName write SetUseOriginalFileName;
     property SaveGfmFile: Boolean read FSaveGfmFile write SetSaveGfmFile;
     property OutLang: TOutLang read FOutLang write SetOutLang;
+    property PackageName: string read FPakcageName write SetPackageName;
   end;
 
   { TRes2goOptionsFrame }
@@ -63,6 +66,8 @@ type
     Label1: TLabel;
     lblOutLang: TLabel;
     lblOutputPath: TLabeledEdit;
+    lblPkgName: TLabeledEdit;
+    procedure FrameClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -108,6 +113,13 @@ begin
   Self.Modified:=True;
 end;
 
+procedure TProjectRes2goRes.SetPackageName(AValue: string);
+begin
+  if FPakcageName=AValue then Exit;
+  FPakcageName:=AValue;
+  Self.Modified:=True;
+end;
+
 procedure TProjectRes2goRes.SetSaveGfmFile(AValue: Boolean);
 begin
   if FSaveGfmFile=AValue then Exit;
@@ -143,6 +155,7 @@ begin
     SetDeleteValue(Path+'Res2go/UseOriginalFileName/Value', UseOriginalFileName, False);
     SetDeleteValue(Path+'Res2go/SaveGfmFile/Value', SaveGfmFile, False);
     SetDeleteValue(Path+'Res2go/OutLang/Value', Integer(OutLang), 0);
+    SetDeleteValue(Path+'Res2go/PackageName/Value', PackageName, 'main');
   end;
 end;
 
@@ -156,6 +169,7 @@ begin
     UseOriginalFileName := GetValue(Path+'Res2go/UseOriginalFileName/Value', False);
     SaveGfmFile := GetValue(Path+'Res2go/SaveGfmFile/Value', False);
     OutLang := TOutLang(GetValue(Path+'Res2go/SaveGfmFile/Value', 0));
+    PackageName := GetValue(Path+'Res2go/PackageName/Value', 'main');
   end;
 
   if Assigned(MyIDEIntf) then
@@ -165,6 +179,7 @@ begin
     MyIDEIntf.UseOriginalFileName := UseOriginalFileName;
     MyIDEIntf.SaveGfmFile := SaveGfmFile;
     MyIDEIntf.OutLang:=OutLang;
+    MyIDEIntf.PackageName:=PackageName;
   end;
 end;
 
@@ -172,6 +187,11 @@ end;
 
 
 { TRes2goOptionsFrame }
+
+procedure TRes2goOptionsFrame.FrameClick(Sender: TObject);
+begin
+
+end;
 
 constructor TRes2goOptionsFrame.Create(AOwner: TComponent);
 begin
@@ -182,6 +202,7 @@ begin
   lblOutputPath.EditLabel.Caption:=rsOutputPath;
   Label1.Caption:=rsOutputPathEg;
   lblOutLang.Caption:=rsOutLang;
+  lblPkgName.EditLabel.Caption:=rsPackageName;
 end;
 
 destructor TRes2goOptionsFrame.Destroy;
@@ -216,12 +237,14 @@ begin
       MyIDEIntf.UseOriginalFileName:= LRes.UseOriginalFileName;
       MyIDEIntf.SaveGfmFile := LRes.SaveGfmFile;
       MyIDEIntf.OutLang := LRes.OutLang;
+      MyIDEIntf.PackageName:=LRes.PackageName;
 
       chkEanbledConvert.Checked := MyIDEIntf.EnabledConvert;
       lblOutputPath.Text := MyIDEIntf.OutputPath;
       ChkUseOriginalFileName.Checked:= MyIDEIntf.UseOriginalFileName;
       ChkSaveGfmFile.Checked := MyIDEIntf.SaveGfmFile;
       cbbLangs.ItemIndex:=Integer(MyIDEIntf.OutLang);
+      lblPkgName.Text:=MyIDEIntf.PackageName;
     end;
   end;
 end;
@@ -240,12 +263,14 @@ begin
       MyIDEIntf.UseOriginalFileName:=chkUseOriginalFileName.Checked;
       MyIDEIntf.SaveGfmFile := chkSaveGfmFile.Checked;
       MyIDEIntf.OutLang:=TOutLang(cbbLangs.ItemIndex);
+      MyIDEIntf.PackageName:=Trim(lblPkgName.Text);
 
       LRes.OutputPath := MyIDEIntf.OutputPath;
       LRes.Enabled := MyIDEIntf.EnabledConvert;
       LRes.UseOriginalFileName := MyIDEIntf.UseOriginalFileName;
       LRes.SaveGfmFile := MyIDEIntf.SaveGfmFile;
       LRes.OutLang:=MyIDEIntf.OutLang;
+      LRes.PackageName:=MyIDEIntf.PackageName;
     end;
   end;
 end;

@@ -19,8 +19,9 @@ resourceString
   rsUseOriginalFileName = 'Use Original File Name';
   rsSaveGfmFile = 'Save gfm File';
   rsOutputPath = 'Output Path:';
-  rsOutputPathEg = 'eg:  code/';
+  rsOutputPathEg = 'eg:  "code" or "$Path($ProjectFile())code" or "C:\LzUI" ';
   rsOutLang = 'Out Lang:';
+  rsPackageName = 'Package Name:';
 
 implementation
 

@@ -37,12 +37,12 @@
         <UnitName Value="ugolang"/>
       </Item5>
       <Item6>
-        <Filename Value="res2goresources.pas"/>
-        <UnitName Value="res2goResources"/>
+        <Filename Value="ulangbase.pas"/>
+        <UnitName Value="uLangBase"/>
       </Item6>
       <Item7>
-        <Filename Value="ulangbase.pas"/>
-        <UnitName Value="ulangbase"/>
+        <Filename Value="res2goresources.pas"/>
+        <UnitName Value="res2goResources"/>
       </Item7>
     </Files>
     <i18n>

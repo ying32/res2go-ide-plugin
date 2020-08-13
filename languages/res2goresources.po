@@ -34,7 +34,11 @@ msgid "Output Path:"
 msgstr ""
 
 #: res2goresources.rsoutputpatheg
-msgid "eg:  code/"
+msgid "eg:  \"code\" or \"$Path($ProjectFile())code\" or \"C:\\LzUI\" "
+msgstr ""
+
+#: res2goresources.rspackagename
+msgid "Package Name:"
 msgstr ""
 
 #: res2goresources.rsregisterformresources

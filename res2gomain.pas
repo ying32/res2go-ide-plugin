@@ -45,13 +45,17 @@ type
     FEnabledCovert: Boolean;
     FOutLang: TOutLang;
     FOutputPath: string;
+    FPackageName: string;
     FReConvertRes: Boolean;
     FResFileName: string;
     FSaveGfmFile: Boolean;
     FUseOriginalFileName: Boolean;
+    FUseScaled: Boolean;
 
     function GetLang: TLangBase;
+    function GetRealOutputPackagePath: string;
     function GetRealOutputPath: string;
+    function GetUseScaled: Boolean;
     procedure SaveComponents(ADesigner: TIDesigner; AUnitFileName, AOutPath: string);
     procedure OnWriteMethodProperty(Writer: TWriter; Instance: TPersistent; PropInfo: PPropInfo;
       const MethodValue, DefMethodValue: TMethod; var Handled: boolean);
@@ -62,6 +66,8 @@ type
     procedure ExecuteCommand(const ACmds: array of string; AWait: Boolean);
 
     function GetProjectPath: string;
+    function IsMainPackage: Boolean;
+    procedure SetPackageName(AValue: string);
   public
     constructor Create;
     destructor Destroy; override;
@@ -74,12 +80,15 @@ type
     property UseOriginalFileName: Boolean read FUseOriginalFileName write FUseOriginalFileName;
     property SaveGfmFile: Boolean read FSaveGfmFile write FSaveGfmFile;
     property OutLang: TOutLang read FOutLang write FOutLang;
+    property PackageName: string read FPackageName write SetPackageName;
+    property UseScaled: Boolean read GetUseScaled;
 
 
     property Lang: TLangBase read GetLang;
 
     property ProjectPath: string read GetProjectPath;
     property RealOutputPath: string read GetRealOutputPath;
+    property RealOutputPackagePath: string read GetRealOutputPackagePath;
 
     property ReConvertRes: Boolean read FReConvertRes write FReConvertRes;
     property ResFileName: string read FResFileName write FResFileName;
@@ -160,7 +169,7 @@ begin
         LWriter.Free;
       end;
       // 保存go文件及impl文件
-      LOutFileName := RealOutputPath;
+      LOutFileName := AOutPath;
       if Self.UseOriginalFileName then
         LOutFileName += AUnitFileName
       else
@@ -177,6 +186,7 @@ begin
           LGfmFileName += AUnitFileName
         else
           LGfmFileName += ADesigner.LookupRoot.Name;
+
         LGfmFileName += '.gfm';
         LStream.Position := 0;
         LStream.SaveToFile(LGfmFileName);
@@ -204,6 +214,13 @@ begin
   Result := AppendPathDelim(Result);
 end;
 
+function TMyIDEIntf.GetUseScaled: Boolean;
+begin
+  Result := True;
+  if Assigned(LazarusIDE) and Assigned(LazarusIDE.ActiveProject) then
+    Result := LazarusIDE.ActiveProject.Scaled;
+end;
+
 function TMyIDEIntf.GetLang: TLangBase;
 begin
   Result := GoLang;
@@ -211,6 +228,13 @@ begin
      olRust: ;
      olNim: ;
   end;
+end;
+
+function TMyIDEIntf.GetRealOutputPackagePath: string;
+begin
+  Result := Self.RealOutputPath;
+  if not IsMainPackage then
+    Result := AppendPathDelim(Result + PackageName);
 end;
 
 // FakeIsJITMethod
@@ -273,6 +297,12 @@ begin
   LOutPath := Self.RealOutputPath;
   if not SysUtils.DirectoryExists(LOutPath) then
     SysUtils.CreateDir(LOutPath);
+  if not IsMainPackage then
+  begin
+    LOutPath := AppendPathDelim(LOutPath) + PackageName;
+    if not SysUtils.DirectoryExists(LOutPath) then
+      SysUtils.CreateDir(LOutPath);
+  end;
 end;
 
 procedure TMyIDEIntf.ExeuteConvertRes(const AResFileName, APath: string);
@@ -319,6 +349,18 @@ begin
     Result := ExtractFilePath(LazarusIDE.ActiveProject.ProjectInfoFile);
 end;
 
+function TMyIDEIntf.IsMainPackage: Boolean;
+begin
+  Result := PackageName.IsEmpty or PackageName.Equals('main');
+end;
+
+procedure TMyIDEIntf.SetPackageName(AValue: string);
+begin
+  if FPackageName=AValue then Exit;
+  FPackageName:=AValue;
+  Lang.PackageName:=FPackageName;
+end;
+
 constructor TMyIDEIntf.Create;
 begin
   inherited Create;
@@ -344,8 +386,7 @@ begin
       LExt := ExtractFileExt(LFileName);
       if SameText(LExt, '.lpr') then
       begin
-        //CtlWriteln(mluNone, rsMsgTransformFile, [ExtractFileName(LFileName)]);
-        Lang.ConvertProjectFile(LFileName, RealOutputPath);
+        Lang.ConvertProjectFile(LFileName, RealOutputPath, UseScaled);
         Break;
       end
     end;
@@ -371,11 +412,7 @@ begin
       CheckAndCreateDir;
       LDesigner := LazarusIDE.GetDesignerWithProjectFile(aFile, False);
       if Assigned(LDesigner) and Assigned(LDesigner.LookupRoot) then
-      begin
-        //Logs('onSaveEditorFile lookupRoot: %s', [LDesigner.LookupRoot.Name]);
-
-        SaveComponents(LDesigner, GetFileNameWithoutExt(TargetFilename),  RealOutputPath);
-      end;
+        SaveComponents(LDesigner, GetFileNameWithoutExt(TargetFilename), RealOutputPackagePath);
     end;
   end;
   Result := mrOk;

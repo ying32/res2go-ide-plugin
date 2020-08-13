@@ -34,8 +34,12 @@ msgid "Output Path:"
 msgstr "输出路径："
 
 #: res2goresources.rsoutputpatheg
-msgid "eg:  code/"
-msgstr "示例：code/"
+msgid "eg:  \"code\" or \"$Path($ProjectFile())code\" or \"C:\\LzUI\" "
+msgstr "示例：\"code\" 或 \"$Path($ProjectFile())code\" 或 \"C:\\LzUI\" "
+
+#: res2goresources.rspackagename
+msgid "Package Name:"
+msgstr ""
 
 #: res2goresources.rsregisterformresources
 msgid "Register Form Resources"
