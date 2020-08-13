@@ -1,6 +1,11 @@
 图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420
 
+v1.0.5
+
+  1、OutPath支持相对路径、绝对路径、Lazarus IDE宏。
+
 v1.0.4
+
   1、增加利用Lazarus IDE完成Windows可执行文件的图标、Manifest、版本信息修改。
   2、main.go不再添加"winappres"包。
 

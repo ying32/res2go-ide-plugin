@@ -29,6 +29,8 @@ uses
   res2goresources,
   uLangBase,
   LResources,
+  LazFileUtils,
+  MacroIntf,
   process;
 
 type
@@ -49,7 +51,7 @@ type
     FUseOriginalFileName: Boolean;
 
     function GetLang: TLangBase;
-    function GetReadOutputPath: string;
+    function GetRealOutputPath: string;
     procedure SaveComponents(ADesigner: TIDesigner; AUnitFileName, AOutPath: string);
     procedure OnWriteMethodProperty(Writer: TWriter; Instance: TPersistent; PropInfo: PPropInfo;
       const MethodValue, DefMethodValue: TMethod; var Handled: boolean);
@@ -67,7 +69,7 @@ type
     function onSaveEditorFile(Sender: TObject; aFile: TLazProjectFile; SaveStep: TSaveEditorFileStep; TargetFilename: string): TModalResult;
     function onProjectOpened(Sender: TObject; AProject: TLazProject): TModalResult;
 
-    property EnabledCovert: Boolean read FEnabledCovert write FEnabledCovert;
+    property EnabledConvert: Boolean read FEnabledCovert write FEnabledCovert;
     property OutputPath: string read FOutputPath write FOutputPath;
     property UseOriginalFileName: Boolean read FUseOriginalFileName write FUseOriginalFileName;
     property SaveGfmFile: Boolean read FSaveGfmFile write FSaveGfmFile;
@@ -77,7 +79,7 @@ type
     property Lang: TLangBase read GetLang;
 
     property ProjectPath: string read GetProjectPath;
-    property ReadOutputPath: string read GetReadOutputPath;
+    property RealOutputPath: string read GetRealOutputPath;
 
     property ReConvertRes: Boolean read FReConvertRes write FReConvertRes;
     property ResFileName: string read FResFileName write FResFileName;
@@ -158,7 +160,7 @@ begin
         LWriter.Free;
       end;
       // 保存go文件及impl文件
-      LOutFileName := ReadOutputPath;
+      LOutFileName := RealOutputPath;
       if Self.UseOriginalFileName then
         LOutFileName += AUnitFileName
       else
@@ -185,9 +187,21 @@ begin
   end;
 end;
 
-function TMyIDEIntf.GetReadOutputPath: string;
+
+function TMyIDEIntf.GetRealOutputPath: string;
 begin
-  Result := ProjectPath + OutputPath + PathDelim;
+  Result := OutputPath;
+  if Assigned(IDEMacros) then
+  begin
+    IDEMacros.SubstituteMacros(Result);
+    if not FileNameIsAbsolute(Result) then
+      Result := ProjectPath + Result;
+  end else
+  begin
+    if not FileNameIsAbsolute(Result) then
+       Result := ProjectPath + OutputPath;
+  end;
+  Result := AppendPathDelim(Result);
 end;
 
 function TMyIDEIntf.GetLang: TLangBase;
@@ -256,7 +270,7 @@ procedure TMyIDEIntf.CheckAndCreateDir;
 var
   LOutPath: string;
 begin
-  LOutPath := ProjectPath + OutputPath;
+  LOutPath := Self.RealOutputPath;
   if not SysUtils.DirectoryExists(LOutPath) then
     SysUtils.CreateDir(LOutPath);
 end;
@@ -312,7 +326,7 @@ end;
 
 destructor TMyIDEIntf.Destroy;
 begin
-     inherited Destroy;
+  inherited Destroy;
 end;
 
 function TMyIDEIntf.onSaveAll(Sender: TObject): TModalResult;
@@ -320,7 +334,7 @@ var
   I: Integer;
   LExt, LFileName: string;
 begin
-  if EnabledCovert then
+  if EnabledConvert then
   begin
     ClearMsg;
     CheckAndCreateDir;
@@ -331,7 +345,7 @@ begin
       if SameText(LExt, '.lpr') then
       begin
         //CtlWriteln(mluNone, rsMsgTransformFile, [ExtractFileName(LFileName)]);
-        Lang.ConvertProjectFile(LFileName, ReadOutputPath);
+        Lang.ConvertProjectFile(LFileName, RealOutputPath);
         Break;
       end
     end;
@@ -339,7 +353,7 @@ begin
   if ReConvertRes then
   begin
     ReConvertRes := False;
-    ExeuteConvertRes(ResFileName, ReadOutputPath);
+    ExeuteConvertRes(ResFileName, RealOutputPath);
   end;
   Result := mrOk;
 end;
@@ -351,7 +365,7 @@ var
 begin
   if SaveStep = sefsAfterWrite then
   begin
-    if EnabledCovert then
+    if EnabledConvert then
     begin
       ClearMsg;
       CheckAndCreateDir;
@@ -360,7 +374,7 @@ begin
       begin
         //Logs('onSaveEditorFile lookupRoot: %s', [LDesigner.LookupRoot.Name]);
 
-        SaveComponents(LDesigner, GetFileNameWithoutExt(TargetFilename),  ReadOutputPath);
+        SaveComponents(LDesigner, GetFileNameWithoutExt(TargetFilename),  RealOutputPath);
       end;
     end;
   end;

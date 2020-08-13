@@ -160,7 +160,7 @@ begin
 
   if Assigned(MyIDEIntf) then
   begin
-    MyIDEIntf.EnabledCovert := Enabled;
+    MyIDEIntf.EnabledConvert := Enabled;
     MyIDEIntf.OutputPath := OutputPath;
     MyIDEIntf.UseOriginalFileName := UseOriginalFileName;
     MyIDEIntf.SaveGfmFile := SaveGfmFile;
@@ -211,13 +211,13 @@ begin
     LRes := TProjectRes2goRes(TAbstractProjectResources(LazarusIDE.ActiveProject.Resources).Resource[TProjectRes2goRes]);
     if Assigned(LRes) then
     begin
-      MyIDEIntf.EnabledCovert := LRes.Enabled;
+      MyIDEIntf.EnabledConvert := LRes.Enabled;
       MyIDEIntf.OutputPath := LRes.OutputPath;
       MyIDEIntf.UseOriginalFileName:= LRes.UseOriginalFileName;
       MyIDEIntf.SaveGfmFile := LRes.SaveGfmFile;
       MyIDEIntf.OutLang := LRes.OutLang;
 
-      chkEanbledConvert.Checked := MyIDEIntf.EnabledCovert;
+      chkEanbledConvert.Checked := MyIDEIntf.EnabledConvert;
       lblOutputPath.Text := MyIDEIntf.OutputPath;
       ChkUseOriginalFileName.Checked:= MyIDEIntf.UseOriginalFileName;
       ChkSaveGfmFile.Checked := MyIDEIntf.SaveGfmFile;
@@ -235,14 +235,14 @@ begin
     LRes := TProjectRes2goRes(TAbstractProjectResources(LazarusIDE.ActiveProject.Resources).Resource[TProjectRes2goRes]);
     if Assigned(LRes) then
     begin
-      MyIDEIntf.EnabledCovert := chkEanbledConvert.Checked;
+      MyIDEIntf.EnabledConvert := chkEanbledConvert.Checked;
       MyIDEIntf.OutputPath:= lblOutputPath.Text;
       MyIDEIntf.UseOriginalFileName:=chkUseOriginalFileName.Checked;
       MyIDEIntf.SaveGfmFile := chkSaveGfmFile.Checked;
       MyIDEIntf.OutLang:=TOutLang(cbbLangs.ItemIndex);
 
       LRes.OutputPath := MyIDEIntf.OutputPath;
-      LRes.Enabled := MyIDEIntf.EnabledCovert;
+      LRes.Enabled := MyIDEIntf.EnabledConvert;
       LRes.UseOriginalFileName := MyIDEIntf.UseOriginalFileName;
       LRes.SaveGfmFile := MyIDEIntf.SaveGfmFile;
       LRes.OutLang:=MyIDEIntf.OutLang;
