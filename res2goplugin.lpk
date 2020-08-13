@@ -13,7 +13,7 @@
       </SearchPaths>
     </CompilerOptions>
     <Description Value="res2go "/>
-    <Version Major="1" Release="5"/>
+    <Version Major="1" Release="6"/>
     <Files Count="7">
       <Item1>
         <Filename Value="res2gomain.pas"/>

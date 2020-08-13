@@ -52,10 +52,12 @@ type
     FUseOriginalFileName: Boolean;
     FUseScaled: Boolean;
 
+    function GetCompilerPath: string;
     function GetLang: TLangBase;
     function GetRealOutputPackagePath: string;
     function GetRealOutputPath: string;
     function GetUseScaled: Boolean;
+    function GetWindResFileName: string;
     procedure SaveComponents(ADesigner: TIDesigner; AUnitFileName, AOutPath: string);
     procedure OnWriteMethodProperty(Writer: TWriter; Instance: TPersistent; PropInfo: PPropInfo;
       const MethodValue, DefMethodValue: TMethod; var Handled: boolean);
@@ -89,6 +91,8 @@ type
     property ProjectPath: string read GetProjectPath;
     property RealOutputPath: string read GetRealOutputPath;
     property RealOutputPackagePath: string read GetRealOutputPackagePath;
+    property CompilerPath: string read GetCompilerPath;
+    property WindResFileName: string read GetWindResFileName;
 
     property ReConvertRes: Boolean read FReConvertRes write FReConvertRes;
     property ResFileName: string read FResFileName write FResFileName;
@@ -221,12 +225,29 @@ begin
     Result := LazarusIDE.ActiveProject.Scaled;
 end;
 
+function TMyIDEIntf.GetWindResFileName: string;
+begin
+  Result := 'windres'{$ifdef windows}+'.exe'{$endif};
+  Result :=  AppendPathDelim(CompilerPath) + Result;
+end;
+
 function TMyIDEIntf.GetLang: TLangBase;
 begin
   Result := GoLang;
   case Self.FOutLang of
      olRust: ;
      olNim: ;
+  end;
+end;
+
+function TMyIDEIntf.GetCompilerPath: string;
+begin
+  Result := '';
+  if Assigned(IDEMacros) then
+  begin
+    Result := '$CompPath()';
+    IDEmacros.SubstituteMacros(Result);
+    Result := ExtractFilePath(Result);
   end;
 end;
 
@@ -308,11 +329,20 @@ end;
 procedure TMyIDEIntf.ExeuteConvertRes(const AResFileName, APath: string);
 var
   LProcess: TProcess;
+  LWindResFileName: string;
 begin
   if not FileExists(AResFileName) then
     Exit;
-  ExecuteCommand([Format('windres -i "%s" -J res -o "%sdefaultRes_windows_amd64.syso" -F pe-x86-64', [AResFileName, APath]),
-                  Format('windres -i "%s" -J res -o "%sdefaultRes_windows_386.syso" -F pe-i386', [AResFileName, APath])], True);
+  LWindResFileName := GetWindResFileName;
+  if FileExists(LWindResFileName) then
+    LWindResFileName := '"' + LWindResFileName + '"'
+  else
+    LWindResFileName := 'windres';
+
+  //Logs('LWindResFileName=%s', [LWindResFileName]);
+
+  ExecuteCommand([Format('%s -i "%s" -J res -o "%sdefaultRes_windows_amd64.syso" -F pe-x86-64', [LWindResFileName, AResFileName, APath]),
+                  Format('%s -i "%s" -J res -o "%sdefaultRes_windows_386.syso" -F pe-i386', [LWindResFileName, AResFileName, APath])], True);
 //windres -i project1.res -J res -o defaultRes_windows_amd64.syso -F pe-x86-64
 //windres -i project1.res -J res -o defaultRes_windows_386.syso -F pe-i386
 end;
@@ -334,7 +364,17 @@ begin
         LProcess.Execute;
         if AWait then
           LProcess.WaitOnExit;
+        if LProcess.ExitCode <> 0 then
+        begin
+          //CtlWriteln(mluError);
+          Exit;
+        end;
       except
+        on E: Exception do
+        begin
+          CtlWriteln(mluError, E.Message);
+          Exit;
+        end;
       end;
     end;
   finally

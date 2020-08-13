@@ -1,5 +1,10 @@
 图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420
 
+v1.0.6
+
+  1、默认使用fpc中自带的windres，如果未找到则使用`PATH`中的windres。
+  2、执行windres出错误输出错误提示。
+
 v1.0.5
 
   1、OutPath支持相对路径、绝对路径、Lazarus IDE宏。
