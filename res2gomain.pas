@@ -430,11 +430,11 @@ begin
         Break;
       end
     end;
-  end;
-  if ReConvertRes then
-  begin
-    ReConvertRes := False;
-    ExeuteConvertRes(ResFileName, RealOutputPath);
+    if ReConvertRes then
+    begin
+      ReConvertRes := False;
+      ExeuteConvertRes(ResFileName, RealOutputPath);
+    end;
   end;
   Result := mrOk;
 end;
