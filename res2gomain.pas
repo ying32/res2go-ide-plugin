@@ -327,9 +327,17 @@ begin
 end;
 
 procedure TMyIDEIntf.ExeuteConvertRes(const AResFileName, APath: string);
+const
+  PlatformStr: array[Boolean] of string = ('pe-x86-64', 'pe-i386');
+
 var
-  LProcess: TProcess;
   LWindResFileName: string;
+
+  function GetCmdLine(AOutFileName: string; AIsAmd64: Boolean): string;
+  begin
+    Result := Format('%s -i "%s" -J res -o "%s%s" -F %s', [LWindResFileName, AResFileName, APath, AOutFileName, PlatformStr[AIsAmd64]]);
+  end;
+
 begin
   if not FileExists(AResFileName) then
     Exit;
@@ -339,12 +347,14 @@ begin
   else
     LWindResFileName := 'windres';
 
-  //Logs('LWindResFileName=%s', [LWindResFileName]);
+  case OutLang of
+      olGo:
+        ExecuteCommand([GetCmdLine('defaultRes_windows_386.syso', False), GetCmdLine('defaultRes_windows_amd64.syso', True)], True);
 
-  ExecuteCommand([Format('%s -i "%s" -J res -o "%sdefaultRes_windows_amd64.syso" -F pe-x86-64', [LWindResFileName, AResFileName, APath]),
-                  Format('%s -i "%s" -J res -o "%sdefaultRes_windows_386.syso" -F pe-i386', [LWindResFileName, AResFileName, APath])], True);
-//windres -i project1.res -J res -o defaultRes_windows_amd64.syso -F pe-x86-64
-//windres -i project1.res -J res -o defaultRes_windows_386.syso -F pe-i386
+      //olRust, olNim:
+      //  if (OutLang = olNim) or ((OutLang = olRust) and (IsGNU)) then
+      //     ExecuteCommand([GetCmdLine('appres_386.o', False), GetCmdLine('appres_amd64.o', True)], True);
+   end;
 end;
 
 procedure TMyIDEIntf.ExecuteCommand(const ACmds: array of string; AWait: Boolean);
