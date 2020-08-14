@@ -3,7 +3,7 @@
 v1.0.6
 
   1、默认使用fpc中自带的windres，如果未找到则使用`PATH`中的windres。
-  2、执行windres出错误输出错误提示。
+  2、执行windres出错则输出错误提示。
   3、修复未启用转换也会转换res文件。
 
 v1.0.5
