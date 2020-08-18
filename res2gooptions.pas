@@ -201,7 +201,7 @@ begin
   chkSaveGfmFile.Caption := rsSaveGfmFile;
   lblOutputPath.EditLabel.Caption:=rsOutputPath;
   Label1.Caption:=rsOutputPathEg;
-  lblOutLang.Caption:=rsOutLang;
+  lblOutLang.Caption:=rsOutputLang;
   lblPkgName.EditLabel.Caption:=rsPackageName;
 end;
 

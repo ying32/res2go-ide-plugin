@@ -12,8 +12,8 @@
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
-    <Description Value="res2go "/>
-    <Version Major="1" Release="6"/>
+    <Description Value="res2go IDE plug-in"/>
+    <Version Major="1" Release="7"/>
     <Files Count="7">
       <Item1>
         <Filename Value="res2gomain.pas"/>
@@ -26,6 +26,7 @@
       </Item2>
       <Item3>
         <Filename Value="res2gooptions.pas"/>
+        <DisableI18NForLFM Value="True"/>
         <UnitName Value="res2goOptions"/>
       </Item3>
       <Item4>

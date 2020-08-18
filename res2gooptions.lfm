@@ -56,11 +56,11 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
     TabOrder = 3
   end
   object lblOutLang: TLabel
-    Left = 16
+    Left = 9
     Height = 17
     Top = 140
-    Width = 56
-    Caption = 'Out Lang:'
+    Width = 75
+    Caption = 'Output Lang:'
     ParentColor = False
   end
   object cbbLangs: TComboBox
