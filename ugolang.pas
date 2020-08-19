@@ -29,7 +29,7 @@ type
     procedure InitBaseTypes; override;
   public
     constructor Create;
-    procedure ConvertProjectFile(const AFileName, AOutPath: string; AUseScaled: Boolean); override;
+    procedure ConvertProjectFile(const AFileName, AOutPath, ATitle: string; AUseScaled: Boolean); override;
     function ToEventString(AProp: PPropInfo): string; override;
     procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream); override;
   end;
@@ -50,7 +50,8 @@ begin
   inherited Create;
 end;
 
-procedure TGoLang.ConvertProjectFile(const AFileName, AOutPath: string; AUseScaled: Boolean);
+procedure TGoLang.ConvertProjectFile(const AFileName, AOutPath, ATitle: string;
+  AUseScaled: Boolean);
 
   function UseScaledStr: string;
   begin
@@ -60,6 +61,11 @@ procedure TGoLang.ConvertProjectFile(const AFileName, AOutPath: string; AUseScal
   function ScaledStr: string;
   begin
     Result := '    vcl.Application.SetScaled(' + UseScaledStr + ')';
+  end;
+
+  function TitleStr: string;
+  begin
+    Result := '    vcl.Application.SetTitle("' + ATitle + '")';
   end;
 
 var
@@ -102,6 +108,7 @@ begin
       LMainDotGo.Add('');
 
       LMainDotGo.Add(ScaledStr);
+      LMainDotGo.Add(TitleStr);
       LMainDotGo.Add('    vcl.Application.Initialize()');
       LMainDotGo.Add('    vcl.Application.SetMainFormOnTaskBar(true)');
     end
@@ -147,6 +154,8 @@ begin
         // 绽放的
         if LMainDotGo[I].Trim.StartsWith('vcl.Application.SetScaled') then
           LMainDotGo[I] := ScaledStr;
+        if LMainDotGo[I].Trim.StartsWith('vcl.Application.SetTitle') then
+          LMainDotGo[I] := TitleStr;
 
         // 找初始语句
         if LMainDotGo[I].Trim.StartsWith('vcl.Application.Initialize') then

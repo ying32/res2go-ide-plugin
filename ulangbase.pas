@@ -38,7 +38,7 @@ type
 
     property PackageName: string read FPackageName write FPackageName;
 
-    procedure ConvertProjectFile(const AFileName, AOutPath: string; AUseScaled: Boolean); virtual; abstract;
+    procedure ConvertProjectFile(const AFileName, AOutPath, ATitle: string; AUseScaled: Boolean); virtual; abstract;
     function ToEventString(AProp: PPropInfo): string; virtual; abstract;
     procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream); virtual; abstract;
   end;

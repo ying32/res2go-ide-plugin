@@ -1,5 +1,9 @@
 图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420
 
+v1.0.7
+
+  1、增加Lazarus IDE中直接设置应用程序标题"Application.SetTitle"。
+
 v1.0.6
 
   1、默认使用fpc中自带的windres，如果未找到则使用`PATH`中的windres。

@@ -54,6 +54,7 @@ type
 
     function GetCompilerPath: string;
     function GetLang: TLangBase;
+    function GetProjectTitle: string;
     function GetRealOutputPackagePath: string;
     function GetRealOutputPath: string;
     function GetUseScaled: Boolean;
@@ -84,6 +85,7 @@ type
     property OutLang: TOutLang read FOutLang write FOutLang;
     property PackageName: string read FPackageName write SetPackageName;
     property UseScaled: Boolean read GetUseScaled;
+    property ProjectTitle: string read GetProjectTitle;
 
 
     property Lang: TLangBase read GetLang;
@@ -240,15 +242,23 @@ begin
   end;
 end;
 
-function TMyIDEIntf.GetCompilerPath: string;
+function TMyIDEIntf.GetProjectTitle: string;
 begin
   Result := '';
-  if Assigned(IDEMacros) then
-  begin
-    Result := '$CompPath()';
-    IDEmacros.SubstituteMacros(Result);
-    Result := ExtractFilePath(Result);
-  end;
+  if Assigned(LazarusIDE) and Assigned(LazarusIDE.ActiveProject) then
+    Result := LazarusIDE.ActiveProject.Title;
+end;
+
+function TMyIDEIntf.GetCompilerPath: string;
+begin
+  Result := ExtractFilePath(LazarusIDE.GetFPCompilerFilename);
+  // LazarusIDE.GetFPCompilerFilename
+  //if Assigned(IDEMacros) then
+  //begin
+  //  Result := '$CompPath()';
+  //  IDEmacros.SubstituteMacros(Result);
+  //  Result := ExtractFilePath(Result);
+  //end;
 end;
 
 function TMyIDEIntf.GetRealOutputPackagePath: string;
@@ -396,7 +406,8 @@ function TMyIDEIntf.GetProjectPath: string;
 begin
   Result := '';
   if Assigned(LazarusIDE.ActiveProject) then
-    Result := ExtractFilePath(LazarusIDE.ActiveProject.ProjectInfoFile);
+    Result := AppendPathDelim(LazarusIDE.ActiveProject.Directory);
+   // Result := ExtractFilePath(LazarusIDE.ActiveProject.ProjectInfoFile);
 end;
 
 function TMyIDEIntf.IsMainPackage: Boolean;
@@ -436,7 +447,7 @@ begin
       LExt := ExtractFileExt(LFileName);
       if SameText(LExt, '.lpr') then
       begin
-        Lang.ConvertProjectFile(LFileName, RealOutputPath, UseScaled);
+        Lang.ConvertProjectFile(LFileName, RealOutputPath, ProjectTitle, UseScaled);
         Break;
       end
     end;
@@ -470,6 +481,10 @@ end;
 
 function TMyIDEIntf.onProjectOpened(Sender: TObject; AProject: TLazProject): TModalResult;
 begin
+
+  //Logs('GetCompilerFilename=%s', [LazarusIDE.GetCompilerFilename]);
+  //Logs('GetFPCompilerFilename=%s', [LazarusIDE.GetFPCompilerFilename]);
+  //Logs('ActiveProject.Directory=%s', [LazarusIDE.ActiveProject.Directory]);
   Result := mrOk;
 end;
 
