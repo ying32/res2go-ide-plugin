@@ -5,6 +5,11 @@
 // Licensed under Lazarus.modifiedLGPL
 //
 //----------------------------------------
+
+{$if FPC_FULLVERSION < 30200}
+   {$ERROR 'Requires FPC version>=3.2'}
+{$endif}
+
 unit res2gomain;
 
 {$mode objfpc}{$H+}
@@ -30,8 +35,7 @@ uses
   uLangBase,
   LResources,
   LazFileUtils,
-  MacroIntf,
-  process;
+  MacroIntf;
 
 type
 
@@ -52,22 +56,22 @@ type
     FUseDefaultWinAppRes: Boolean;
     FUseOriginalFileName: Boolean;
 
-    function GetCompilerPath: string;
+
     function GetDefaultProjectParam: TProjParam;
     function GetLang: TLangBase;
 
     function GetProjectTitle: string;
     function GetRealOutputPackagePath: string;
     function GetRealOutputPath: string;
+    function GetResFileName: string;
     function GetUseScaled: Boolean;
-    function GetWindResFileName: string;
+
     procedure SaveComponents(ADesigner: TIDesigner; AUnitFileName, AOutPath: string);
     procedure OnWriteMethodProperty(Writer: TWriter; Instance: TPersistent; PropInfo: PPropInfo;
       const MethodValue, DefMethodValue: TMethod; var Handled: boolean);
 
     procedure CheckAndCreateDir;
-    procedure ExeuteConvertRes(const AResFileName, APath: string);
-    procedure ExecuteCommand(const ACmds: array of string; AWait: Boolean);
+
 
     function GetProjectPath: string;
     function IsMainPackage: Boolean;
@@ -97,12 +101,11 @@ type
     property ProjectPath: string read GetProjectPath;
     property RealOutputPath: string read GetRealOutputPath;
     property RealOutputPackagePath: string read GetRealOutputPackagePath;
-    property CompilerPath: string read GetCompilerPath;
-    property WindResFileName: string read GetWindResFileName;
+
 
 
     property ReConvertRes: Boolean read FReConvertRes write FReConvertRes;
-    property ResFileName: string read FResFileName write FResFileName;
+    property ResFileName: string read GetResFileName;
   end;
 
   // JITForms.pas
@@ -208,7 +211,6 @@ begin
   end;
 end;
 
-
 function TMyIDEIntf.GetRealOutputPath: string;
 begin
   Result := OutputPath;
@@ -225,17 +227,16 @@ begin
   Result := AppendPathDelim(Result);
 end;
 
+function TMyIDEIntf.GetResFileName: string;
+begin
+  Result := ChangeFileExt(LazarusIDE.ActiveProject.ProjectInfoFile, '.res');
+end;
+
 function TMyIDEIntf.GetUseScaled: Boolean;
 begin
   Result := True;
   if Assigned(LazarusIDE) and Assigned(LazarusIDE.ActiveProject) then
     Result := LazarusIDE.ActiveProject.Scaled;
-end;
-
-function TMyIDEIntf.GetWindResFileName: string;
-begin
-  Result := 'windres'{$ifdef windows}+'.exe'{$endif};
-  Result :=  AppendPathDelim(CompilerPath) + Result;
 end;
 
 function TMyIDEIntf.GetLang: TLangBase;
@@ -254,21 +255,9 @@ begin
     Result := LazarusIDE.ActiveProject.Title;
 end;
 
-function TMyIDEIntf.GetCompilerPath: string;
-begin
-  Result := ExtractFilePath(LazarusIDE.GetFPCompilerFilename);
-  // LazarusIDE.GetFPCompilerFilename
-  //if Assigned(IDEMacros) then
-  //begin
-  //  Result := '$CompPath()';
-  //  IDEmacros.SubstituteMacros(Result);
-  //  Result := ExtractFilePath(Result);
-  //end;
-end;
-
 function TMyIDEIntf.GetDefaultProjectParam: TProjParam;
 begin
-  Result := TProjParam.Create(Self.ProjectTitle, Self.UseScaled, Self.UseDefaultWinAppRes);
+  Result := TProjParam.Create(Self.RealOutputPath, Self.ProjectTitle, Self.UseScaled, Self.UseDefaultWinAppRes);
 end;
 
 function TMyIDEIntf.GetRealOutputPackagePath: string;
@@ -279,7 +268,7 @@ begin
 end;
 
 // FakeIsJITMethod
-function IsJITMethod(const aMethod: TMethod): boolean;
+function FakeIsJITMethod(const aMethod: TMethod): boolean;
 begin
   Result:= (aMethod.Data <> nil) and (aMethod.Code = nil) and (TObject(aMethod.Data).ClassType.ClassNameIs('TJITMethod'));
 end;
@@ -308,7 +297,7 @@ begin
   if Instance is TComponent then
      LComponentName := TComponent(Instance).Name;
 
-  if IsJITMethod(MethodValue) then
+  if FakeIsJITMethod(MethodValue) then
     LMethodName := TFakeJITMethod(MethodValue.Data).TheMethodName
   else if MethodValue.Code <> nil then
   begin
@@ -346,71 +335,7 @@ begin
   end;
 end;
 
-procedure TMyIDEIntf.ExeuteConvertRes(const AResFileName, APath: string);
-const
-  PlatformStr: array[Boolean] of string = ('pe-x86-64', 'pe-i386');
 
-var
-  LWindResFileName: string;
-
-  function GetCmdLine(AOutFileName: string; AIsAmd64: Boolean): string;
-  begin
-    Result := Format('%s -i "%s" -J res -o "%s%s" -F %s', [LWindResFileName, AResFileName, APath, AOutFileName, PlatformStr[AIsAmd64]]);
-  end;
-
-begin
-  if not FileExists(AResFileName) then
-    Exit;
-  LWindResFileName := GetWindResFileName;
-  if FileExists(LWindResFileName) then
-    LWindResFileName := '"' + LWindResFileName + '"'
-  else
-    LWindResFileName := 'windres';
-
-  case OutLang of
-      olGo:
-        ExecuteCommand([GetCmdLine('defaultRes_windows_386.syso', False), GetCmdLine('defaultRes_windows_amd64.syso', True)], True);
-
-      //olRust, olNim:
-      //  if (OutLang = olNim) or ((OutLang = olRust) and (IsGNU)) then
-      //     ExecuteCommand([GetCmdLine('appres_386.o', False), GetCmdLine('appres_amd64.o', True)], True);
-   end;
-end;
-
-procedure TMyIDEIntf.ExecuteCommand(const ACmds: array of string; AWait: Boolean);
-var
-  LProcess: TProcess;
-  LCmd: string;
-begin
-  if Length(ACmds) = 0 then Exit;
-  LProcess := TProcess.Create(nil);
-  try
-    LProcess.Options:= [];//[poWaitOnExit{, poNewProcessGroup, poStderrToOutPut}];
-    LProcess.ShowWindow := swoHIDE;
-    for LCmd in ACmds do
-    begin
-      try
-        LProcess.CommandLine := LCmd;
-        LProcess.Execute;
-        if AWait then
-          LProcess.WaitOnExit;
-        if LProcess.ExitCode <> 0 then
-        begin
-          //CtlWriteln(mluError);
-          Exit;
-        end;
-      except
-        on E: Exception do
-        begin
-          CtlWriteln(mluError, E.Message);
-          Exit;
-        end;
-      end;
-    end;
-  finally
-    LProcess.Free;
-  end;
-end;
 
 function TMyIDEIntf.GetProjectPath: string;
 begin
@@ -448,11 +373,11 @@ begin
   begin
     ClearMsg;
     CheckAndCreateDir;
-    Lang.ConvertProjectFile(RealOutputPath, DefaultProjectParam);
+    Lang.ConvertProjectFile(DefaultProjectParam);
     if ReConvertRes and (not UseDefaultWinAppRes) then
     begin
       ReConvertRes := False;
-      ExeuteConvertRes(ResFileName, RealOutputPath);
+      Lang.ConvertResource(ResFileName, RealOutputPath);
     end;
   end;
   Result := mrOk;

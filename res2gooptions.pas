@@ -150,10 +150,7 @@ function TProjectRes2goRes.UpdateResources(
 begin
   Result := True;
   if Assigned(MyIDEIntf) then
-  begin
     MyIDEIntf.ReConvertRes:= True;
-    MyIDEIntf.ResFileName:=MainFilename;
-  end;
 end;
 
 procedure TProjectRes2goRes.WriteToProjectFile(AConfig: TObject;
@@ -281,6 +278,8 @@ begin
       MyIDEIntf.SaveGfmFile := chkSaveGfmFile.Checked;
       MyIDEIntf.OutLang:=TOutLang(cbbLangs.ItemIndex);
       MyIDEIntf.PackageName:=Trim(lblPkgName.Text);
+      if (not MyIDEIntf.UseDefaultWinAppRes) and chkUseDefaultWinAppRes.Checked then
+        MyIDEIntf.ReConvertRes:= True;
       MyIDEIntf.UseDefaultWinAppRes := chkUseDefaultWinAppRes.Checked;
 
       LRes.OutputPath := MyIDEIntf.OutputPath;

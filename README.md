@@ -3,6 +3,7 @@
 v1.0.7
 
   1、增加Lazarus IDE中直接设置应用程序标题"Application.SetTitle"。
+  2、增加"使用默认winappres"包选项。
 
 v1.0.6
 

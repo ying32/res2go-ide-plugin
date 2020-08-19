@@ -23,7 +23,8 @@ uses
   IDEExternToolIntf,
   LazIDEIntf,
   uSupports,
-  res2goResources;
+  res2goResources,
+  process;
 
 type
 
@@ -45,14 +46,16 @@ type
     Title: string;
     UseScaled: Boolean;
     UseDefaultWinAppRes: Boolean;
+    OutPath: string;
   public
-    constructor Create(ATitle: string; AUseScaled, AUseDefaultWinAppRes: Boolean);
+    constructor Create(AOutPath, ATitle: string; AUseScaled, AUseDefaultWinAppRes: Boolean);
   end;
 
   TLangBase = class
   private
     FPackageName: string;
     function GetProjectLPRFileName: string;
+    function GetWindResFileName: string;
   protected
     FTypeLists: TTypeLists;
     FBaseTypes: TTypeLists;
@@ -62,6 +65,8 @@ type
     function GetParams(AProp: PPropInfo): TFnParams;
     function FirstCaseChar(Astr: string): string;
     function GetVaildForms: TVaildForms;
+    procedure ExecuteCommand(const ACmds: array of string; AWait: Boolean);
+    function GetResFileExists: Boolean; virtual;
 
     function IsMainPackage: Boolean;
   public
@@ -70,19 +75,23 @@ type
 
     property PackageName: string read FPackageName write FPackageName;
     property ProjectLPRFileName: string read GetProjectLPRFileName;
+    property WindResFileName: string read GetWindResFileName;
+    property ResFileExists: Boolean read GetResFileExists;
 
-    procedure ConvertProjectFile(const AOutPath: string; AParam: TProjParam); virtual; abstract;
+    procedure ConvertProjectFile(AParam: TProjParam); virtual; abstract;
     function ToEventString(AProp: PPropInfo): string; virtual; abstract;
     procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream); virtual; abstract;
+    procedure ConvertResource(const AResFileName, APath: string); virtual; abstract;
   end;
 
 implementation
 
 { TProjParam }
 
-constructor TProjParam.Create(ATitle: string; AUseScaled,
+constructor TProjParam.Create(AOutPath, ATitle: string; AUseScaled,
   AUseDefaultWinAppRes: Boolean);
 begin
+  Self.OutPath := AOutPath;
   Self.Title:=ATitle;
   Self.UseScaled:=AUseScaled;
   Self.UseDefaultWinAppRes := AUseDefaultWinAppRes;
@@ -111,6 +120,17 @@ end;
 function TLangBase.GetProjectLPRFileName: string;
 begin
   Result := ChangeFileExt(LazarusIDE.ActiveProject.ProjectInfoFile, '.lpr');
+end;
+
+function TLangBase.GetResFileExists: Boolean;
+begin
+  Result := False;
+end;
+
+function TLangBase.GetWindResFileName: string;
+begin
+  Result := 'windres'{$ifdef windows}+'.exe'{$endif};
+  Result :=  AppendPathDelim(ExtractFilePath(LazarusIDE.GetFPCompilerFilename)) + Result;
 end;
 
 function TLangBase.GetParams(AProp: PPropInfo): TFnParams;
@@ -191,13 +211,48 @@ begin
           begin
             SetLength(Result, Length(Result) + 1);
             LP := S.IndexOf(',');
-            Result[High(Result)] := Trim(S.Substring(LP + 1, S.IndexOf(')') - LP - 1));
+            Result[High(Result)] :=  Trim(S.Substring(LP + 1, S.IndexOf(')') - LP - 1));
           end;
         end;
       finally
         LStrs.Free;
       end;
     end;
+  end;
+end;
+
+procedure TLangBase.ExecuteCommand(const ACmds: array of string; AWait: Boolean);
+var
+  LProcess: TProcess;
+  LCmd: string;
+begin
+  if Length(ACmds) = 0 then Exit;
+  LProcess := TProcess.Create(nil);
+  try
+    LProcess.Options:= [];//[poWaitOnExit{, poNewProcessGroup, poStderrToOutPut}];
+    LProcess.ShowWindow := swoHIDE;
+    for LCmd in ACmds do
+    begin
+      try
+        LProcess.CommandLine := LCmd;
+        LProcess.Execute;
+        if AWait then
+          LProcess.WaitOnExit;
+        if LProcess.ExitCode <> 0 then
+        begin
+          //CtlWriteln(mluError);
+          Exit;
+        end;
+      except
+        on E: Exception do
+        begin
+          CtlWriteln(mluError, E.Message);
+          Exit;
+        end;
+      end;
+    end;
+  finally
+    LProcess.Free;
   end;
 end;
 

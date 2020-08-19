@@ -12,7 +12,16 @@ unit ugolang;
 interface
 
 uses
-  Classes, SysUtils, StrUtils, Forms, TypInfo, uSupports, IDEExternToolIntf, res2goResources, uLangBase;
+  Classes,
+  SysUtils,
+  StrUtils,
+  Forms,
+  TypInfo,
+  LazFileUtils,
+  IDEExternToolIntf,
+  uSupports,
+  res2goResources,
+  uLangBase;
 
 type
 
@@ -26,14 +35,22 @@ type
     procedure CreateImplFile(AFileName: string; AEvents: array of TEventItem; AFormName: string);
     procedure CreateNewMain(AStrs: TStrings; AParam: TProjParam);
     function GetPrefixPackage: string;
+
+    function GetPackageImportPath(const AOutPath: string): string;
+
+    procedure AddOrRemoveImports(ALists: TStrings; AAdds, ARemoves: array of string);
+    procedure ProcessMainFunc(ALists: TStrings; ATitle: string; AUseScaled: Boolean; AForms: array of string);
   protected
     procedure InitTypeLists; override;
     procedure InitBaseTypes; override;
+    function GetResFileExists: Boolean; override;
   public
     constructor Create;
-    procedure ConvertProjectFile(const AOutPath: string; AParam: TProjParam); override;
+
+    procedure ConvertProjectFile(AParam: TProjParam); override;
     function ToEventString(AProp: PPropInfo): string; override;
     procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream); override;
+    procedure ConvertResource(const AResFileName, APath: string); override;
   end;
 
 var
@@ -52,147 +69,52 @@ begin
   inherited Create;
 end;
 
-procedure TGoLang.ConvertProjectFile(const AOutPath: string; AParam: TProjParam);
+procedure TGoLang.ConvertProjectFile(AParam: TProjParam);
 
-  function UseScaledStr: string;
+  function GetForms: TVaildForms;
+  var
+    I: Integer;
   begin
-    if AParam.UseScaled then Result := 'true' else Result := 'false';
+    Result := Self.GetVaildForms;
+    if not Self.IsMainPackage then
+    begin
+      for I := 0 to High(Result) do
+        Result[I] := Self.PackageName + '.' + Result[I];
+    end;
   end;
 
-  function ScaledStr: string;
-  begin
-    Result := '    vcl.Application.SetScaled(' + UseScaledStr + ')';
-  end;
-
-  function TitleStr: string;
-  begin
-    Result := '    vcl.Application.SetTitle("' + AParam.Title + '")';
-  end;
+const
+  PkgArr: array[0..0] of string = ('_ "github.com/ying32/govcl/pkgs/winappres"');
 
 var
-  LMainDotGo: TStringList;
-  S, LVarName, LFormName, LSaveFileName: string;
-  LP: integer;
+  LMainFile: TStringList;
+  LSaveFileName: string;
   LMainFileExists: boolean;
-  LForms: TVaildForms;
-  LIndex, I: integer;
-  LPkg: string;
 begin
-
-  LMainDotGo := TStringList.Create;
+  LMainFile := TStringList.Create;
   try
-    LSaveFileName := AOutPath + 'main.go';
+    LSaveFileName := AParam.OutPath + 'main.go';
     LMainFileExists := FileExists(LSaveFileName);
 
     // 如果不存在 main.go文件，则新建一个
     if not LMainFileExists then
-    begin
-      LMainDotGo.Add('// ' + rsAutomaticallyGeneratedByTheRes2go);
-      LMainDotGo.Add('package main');  // main.go文件始终都必须为main
-      LMainDotGo.Add('');
-      LMainDotGo.Add('import (');
-      LMainDotGo.Add('    "github.com/ying32/govcl/vcl"');
-      // winappres
-      // 总是添加此包
-        //LMainDotGo.Add('    _ "github.com/ying32/govcl/pkgs/winappres"');
-      LMainDotGo.Add(')');
-      LMainDotGo.Add('');
-      LMainDotGo.Add('func main() {');
-      LMainDotGo.Add('');
-
-      LMainDotGo.Add(ScaledStr);
-      LMainDotGo.Add(TitleStr);
-      LMainDotGo.Add('    vcl.Application.Initialize()');
-      LMainDotGo.Add('    vcl.Application.SetMainFormOnTaskBar(true)');
-    end
+      CreateNewMain(LMainFile, AParam)
     else
+    begin
       // 存在则加载此文件
-      LMainDotGo.LoadFromFile(LSaveFileName);
+      LMainFile.LoadFromFile(LSaveFileName);
 
-    LForms := GetVaildForms;
+      if AParam.UseDefaultWinAppRes then
+        AddOrRemoveImports(LMainFile, PkgArr, [])
+      else
+        AddOrRemoveImports(LMainFile, [], PkgArr);
 
-    for S in LStrs do
-    begin
-      // 开始提取 Application.CreateForm的
-      if S.Trim.StartsWith('Application.CreateForm(') then
-      begin
-        LP := S.IndexOf(',');
-        LFormName := Trim(S.Substring(LP + 1, S.IndexOf(')') - LP - 1));
-        LVarName := LFormName + 'Bytes';
-        LVarName[1] := LowerCase(LVarName[1]);
-
-        SetLength(LForms, Length(LForms) + 1);
-        LPkg := '';
-        if not IsMainPackage then
-          LPkg := PackageName + '.';
-
-        LForms[High(LForms)] := Format('    vcl.Application.CreateForm(&%s)', [LPkg + LFormName]);
-        // main.go文件不存在则直接添加
-        if not LMainFileExists then
-          LMainDotGo.Add(LForms[High(LForms)]);
-      end;
+      ProcessMainFunc(LMainFile, AParam.Title, AParam.UseScaled, GetForms);
     end;
-
-    // main.go文件存在的处理方式
-    if LMainFileExists then
-    begin
-      LIndex := -1;
-      for I := LMainDotGo.Count - 1 downto 0 do
-      begin
-        // 查找并移除现有的
-        if LMainDotGo[I].Trim.StartsWith('vcl.Application.CreateForm(') then
-          LMainDotGo.Delete(I);
-      end;
-
-      for I := 0 to LMainDotGo.Count - 1 do
-      begin
-        // 绽放的
-        if LMainDotGo[I].Trim.StartsWith('vcl.Application.SetScaled') then
-          LMainDotGo[I] := ScaledStr;
-        if LMainDotGo[I].Trim.StartsWith('vcl.Application.SetTitle') then
-          LMainDotGo[I] := TitleStr;
-
-        // 找初始语句
-        if LMainDotGo[I].Trim.StartsWith('vcl.Application.Initialize') then
-        begin
-          // 找到了则 I+1为插入起始行
-          LIndex := I + 1;
-          // 判断下一行是不是 vcl.Application.SetMainFormOnTaskBar
-          if LMainDotGo[I + 1].Trim.StartsWith('vcl.Application.SetMainFormOnTaskBar') then
-            Inc(LIndex);
-          Break;
-        end;
-      end;
-
-      // 将前面找到的附加进去
-      if LIndex <> -1 then
-      begin
-        for I := High(LForms) downto 0 do
-          LMainDotGo.Insert(LIndex, LForms[I]);
-      end;
-    end;
-
-    if not LMainFileExists then
-    begin
-      LMainDotGo.Add('    vcl.Application.Run()');
-      LMainDotGo.Add('}');
-    end;
-
-
-    LMainDotGo.SaveToFile(LSaveFileName);
-
-    //LFile := TStringStream.Create('');
-    //try
-    //  LFile.WriteString(LMainDotGo.Text);
-    //  LFile.SaveToFile(LSaveFileName);
-    //finally
-    //  LFile.Free;
-    //end;
+    LMainFile.SaveToFile(LSaveFileName);
   finally
-    LMainDotGo.Free;
-    LStrs.Free;
+    LMainFile.Free;
   end;
-
 end;
 
 function TGoLang.ToEventString(AProp: PPropInfo): string;
@@ -268,7 +190,6 @@ var
   LItem: TEventItem;
   LFindEvent: boolean;
   LReadEventName: string;
-  LSCPkgName: string;
   LIsFrame: boolean;
 begin
   LStrStream := TStringStream.Create('');
@@ -403,6 +324,33 @@ begin
   end;
   // 一定创建，因为多加了个
   CreateImplFile(AFileName, AEvents, LFormName);
+end;
+
+procedure TGoLang.ConvertResource(const AResFileName, APath: string);
+const
+  PlatformStr: array[Boolean] of string = ('pe-x86-64', 'pe-i386');
+
+var
+  LWindResFileName: string;
+
+  function GetCmdLine(AOutFileName: string; AIsAmd64: Boolean): string;
+  begin
+    Result := Format('%s -i "%s" -J res -o "%s%s" -F %s', [LWindResFileName, AResFileName, APath, AOutFileName, PlatformStr[AIsAmd64]]);
+  end;
+
+begin
+  if not FileExists(AResFileName) then
+    Exit;
+  LWindResFileName := WindResFileName;
+  if FileExists(LWindResFileName) then
+    LWindResFileName := '"' + LWindResFileName + '"'
+  else
+    LWindResFileName := 'windres';
+  ExecuteCommand([GetCmdLine('defaultRes_windows_386.syso', False), GetCmdLine('defaultRes_windows_amd64.syso', True)], True);
+
+      //olRust, olNim:
+      //  if (OutLang = olNim) or ((OutLang = olRust) and (IsGNU)) then
+      //     ExecuteCommand([GetCmdLine('appres_386.o', False), GetCmdLine('appres_amd64.o', True)], True);
 end;
 
 procedure TGoLang.CreateImplFile(AFileName: string; AEvents: array of TEventItem; AFormName: string);
@@ -562,7 +510,7 @@ begin
     // 初始添加一个本地导入包的
     // 还要判断当前目标目录在GOPATH中？？？不然要应用不同的规则
     if not IsMainPackage then
-      Add('    "./%s"', [Self.PackageName]);
+      Add('    "%s"', [GetPackageImportPath(AParam.OutPath)]);
 
 
     Add(')');
@@ -599,6 +547,362 @@ begin
   if not IsMainPackage then
     Result := PackageName + '.';
 end;
+
+function TGoLang.GetPackageImportPath(const AOutPath: string): string;
+var
+  LGoPaths, LPath: string;
+  LPaths: array of string;
+  LP: Integer;
+begin
+  Result := '';
+  if IsMainPackage then
+    Exit;
+  //LGoPaths := GetEnvironmentVariable('GOPATH');
+  //if not LGoPaths.IsEmpty then
+  //begin
+  //  LPaths := LGoPaths.Split([';']);
+  //  for LPath in LPaths do
+  //  begin
+  //    if CompareFilenameStarts() = 0 then
+  //    begin
+  //      Exit('');
+  //    end;
+  //  end;
+  //end;
+  Result := './' + PackageName;
+end;
+
+procedure TGoLang.AddOrRemoveImports(ALists: TStrings; AAdds,
+  ARemoves: array of string);
+const
+  Keywords: array[0..3] of string = ('var', 'const', 'type', 'func');
+
+type
+  TImportItem = record
+    Path: string;
+    OrigPath: string;
+    &Single: Boolean;
+    LineNumber: Integer;
+  end;
+
+var
+
+  I: Integer;
+  LS: string;
+  LIsEnd: Boolean;
+  LImports: array of TImportItem;
+  LPkgLineNumber: Integer; // package
+  LInsertStartIndex: Integer;
+  LIsSingle: Boolean;
+
+  procedure UpdateLineNumber(AStart: Integer; AValue: Integer);
+  var
+    J: Integer;
+  begin
+    for J := AStart to High(LImports) do
+      LImports[J].LineNumber += AValue;
+  end;
+
+  function GetRealImportPath(const APath: string): string;
+  var
+    LP1, LP2: Integer;
+  begin
+    LP1 := Pos('"', APath);
+    if LP1 > 0 then
+    begin
+      LP2 := Pos('"', APath, LP1 + 1);
+      if LP2 > 0 then
+        Exit(Copy(APath, LP1+1, LP2 - LP1 - 1));
+    end;
+    Result := APath;
+  end;
+
+  procedure AddImportItem(APath: string; ASingle: Boolean);
+  begin
+    SetLength(LImports, Length(LImports) + 1);
+    with LImports[High(LImports)] do
+    begin
+      OrigPath := APath;
+      Path := GetRealImportPath(APath);
+      &Single := ASingle;
+      LineNumber := I;
+    end;
+  end;
+
+  function IndexPkgNameOf(APath: string): Integer;
+  var
+    J: Integer;
+  begin
+    Result := -1;
+    for J := 0 to High(LImports) do
+      if LImports[J].Path = GetRealImportPath(APath) then
+        Exit(J);
+  end;
+
+  function InKeyWords: Boolean;
+  var
+    LKey: string;
+  begin
+    Result := False;
+    for LKey in Keywords do
+    begin
+      if LS.StartsWith(LKey) then
+        Exit(True);
+    end;
+  end;
+
+  function LineStr: string;
+  begin
+    Result := ALists[I].Trim;
+  end;
+
+  procedure CheckComment;
+  begin
+    if LS.StartsWith('/*') then
+    begin
+      repeat
+        Inc(I);
+        LS := LineStr;
+      until LS.StartsWith('*/') or LS.EndsWith('*/') or (I >= ALists.Count-1);
+      Inc(I);
+      LS := LineStr;
+    end;
+  end;
+
+begin
+
+  I := 0;
+  while I < ALists.Count do
+  begin
+    LS := LineStr;
+    CheckComment;
+    if LS.StartsWith('package') then
+      LPkgLineNumber := I
+    else
+    if LS.StartsWith('import') then
+    begin
+      if LS.IndexOf('(') >= 6 then
+      begin
+        repeat
+          Inc(I);
+          LS := LineStr;
+          CheckComment;
+          LIsEnd := LS.StartsWith(')');
+          if (not LIsEnd) and (not LS.IsEmpty) then
+            AddImportItem(LS, False);
+        until LIsEnd or (I >= ALists.Count-1);
+      end else
+      begin
+        AddImportItem(Copy(LS, 7, Length(LS)-6).Trim, True);
+      end;
+    end;
+    if InKeyWords then
+      Break;
+    Inc(I);
+  end;
+
+  // 添加测试
+  if (Length(ARemoves) > 0) and (Length(LImports) > 0) then
+  begin
+    // 删除
+    for LS in ARemoves do
+    begin
+      I := IndexPkgNameOf(LS);
+      if I <> -1 then
+      begin
+        ALists.Delete(LImports[I].LineNumber);
+        UpdateLineNumber(I, -1);
+      end;
+    end;
+  end;
+
+  if Length(AAdds) > 0 then
+  begin
+    if Length(LImports) > 0 then
+    begin
+      LInsertStartIndex := LImports[High(LImports)].LineNumber;
+      LIsSingle := LImports[High(LImports)].&Single;
+    end else
+    begin
+      LInsertStartIndex := LPkgLineNumber + 2;
+      ALists.Insert(LInsertStartIndex, ')');
+      ALists.Insert(LInsertStartIndex, 'import (');
+      LIsSingle := False;
+    end;
+
+    // 添加
+    for LS in AAdds do
+    begin
+      if IndexPkgNameOf(LS) = -1 then
+      begin
+        if LIsSingle then
+          ALists.Insert(LInsertStartIndex + 1, 'import ' + LS)
+        else
+          ALists.Insert(LInsertStartIndex + 1, '    ' + LS);
+      end;
+    end;
+  end;
+
+end;
+
+procedure TGoLang.ProcessMainFunc(ALists: TStrings; ATitle: string;
+  AUseScaled: Boolean; AForms: array of string);
+type
+  TAppItem = record
+    Name: string;
+    UsePkgName: Boolean;
+    LineNumber: Integer;
+  end;
+
+var
+  I, N: Integer;
+  LS: string;
+  LUsePkgName: Boolean;
+  LLineArr: array of string;
+  LApps: array of TAppItem;
+
+  procedure AddItem(AName: string);
+  begin
+    SetLength(LApps, Length(LApps) + 1);
+    with LApps[High(LApps)] do
+    begin
+      Name := AName;
+      LineNumber := I;
+    end;
+  end;
+
+  procedure UpdateLineNumber(AStart: Integer; AValue: Integer);
+  var
+    J: Integer;
+  begin
+    for J := AStart to High(LApps) do
+      LApps[J].LineNumber += AValue;
+  end;
+
+  function LineStr: string;
+  begin
+    Result := ALists[I].Trim;
+  end;
+
+  procedure CheckComment;
+  begin
+    if LS.StartsWith('/*') then
+    begin
+      repeat
+        Inc(I);
+        LS := LineStr;
+      until LS.StartsWith('*/') or LS.EndsWith('*/') or (I >= ALists.Count-1);
+      Inc(I);
+      LS := LineStr;
+    end;
+  end;
+
+  function IndexNameOf(const AName: string): Integer;
+  var
+    J: Integer;
+  begin
+    Result := -1;
+    for J := 0 to High(LApps) do
+    begin
+      if SameText(LApps[J].Name, AName) then
+        Exit(J);
+    end;
+  end;
+
+  function RemoveAllCreateForm: Integer;
+  var
+    J: Integer;
+  begin
+    Result := -1;
+    for J := 0 to High(LApps) do
+    begin
+      if SameText(LApps[J].Name, 'CreateForm') then
+      begin
+        ALists.Delete(LApps[J].LineNumber);
+        UpdateLineNumber(J, -1);
+        if Result = -1 then
+          Result := LApps[J].LineNumber + 1;
+      end;
+    end;
+  end;
+
+  function GetPkgName: string;
+  begin
+    Result := '';
+    if LUsePkgName then
+      Result := 'vcl.';
+  end;
+
+begin
+  I := 0;
+  while I < ALists.Count do
+  begin
+    LS := LineStr;
+    if LS.StartsWith('func main()') then
+    begin
+      Inc(I);
+      while I < ALists.Count do
+      begin
+        LS := LineStr;
+        CheckComment;
+        LLineArr := LS.Split(['.', '(']);
+        if Length(LLineArr) >= 2 then
+        begin
+          if LLineArr[0].Equals('vcl') and LLineArr[1].Equals('Application') then
+          begin
+            if Length(LLineArr) >= 3 then
+            begin
+              AddItem(LLineArr[2].Trim);
+              LUsePkgName := True;
+            end;
+          end
+          else if LLineArr[0] = 'Application' then
+          begin
+            AddItem(LLineArr[1].Trim);
+            LUsePkgName := False;
+          end;
+        end;
+        Inc(I);
+      end;
+      Break;
+    end;
+    Inc(I);
+  end;
+
+
+  // SetTitle
+  I := IndexNameOf('SetTitle');
+  LS := Format('    %sApplication.SetTitle("%s")', [GetPkgName, ATitle]);
+  if I = -1 then
+  begin
+    I := IndexNameOf('Initialize');
+    ALists.Insert(LApps[I].LineNumber, LS);
+    UpdateLineNumber(I, 1);
+  end else
+    ALists[LApps[I].LineNumber] := LS;
+
+
+  // SetScaled
+  I := IndexNameOf('SetScaled');
+  LS := Format('    %sApplication.SetScaled(%s)', [GetPkgName, BoolToStr(AuseScaled, True).ToLower]);
+  if I = -1 then
+  begin
+    I := IndexNameOf('Initialize');
+    ALists.Insert(LApps[I].LineNumber, LS);
+    UpdateLineNumber(I, 1);
+  end else
+    ALists[LApps[I].LineNumber] := LS;
+
+  // Remove All
+  N := RemoveAllCreateForm;
+
+  // Add Forms
+  for I := High(AForms) downto 0 do
+    ALists.Insert(N, Format('    %sApplication.CreateForm(&%s)', [GetPkgName, AForms[I]]));
+
+end;
+
+
 
 procedure TGoLang.InitTypeLists;
 begin
@@ -639,6 +943,11 @@ begin
     Add('uint64');
     Add('uintptr');
   end;
+end;
+
+function TGoLang.GetResFileExists: Boolean;
+begin
+  Result:= FileExists('') or FileExists('');
 end;
 
 function TGoLang.ParamTypeCov(ASrc: string): string;
