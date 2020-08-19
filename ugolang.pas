@@ -872,14 +872,24 @@ begin
 
   // SetTitle
   I := IndexNameOf('SetTitle');
-  LS := Format('    %sApplication.SetTitle("%s")', [GetPkgName, ATitle]);
-  if I = -1 then
+  if ATitle = '' then
   begin
-    I := IndexNameOf('Initialize');
-    ALists.Insert(LApps[I].LineNumber, LS);
-    UpdateLineNumber(I, 1);
+    if I <> -1 then
+    begin
+      ALists.Delete(LApps[I].LineNumber);
+      UpdateLineNumber(I, -1);
+    end;
   end else
-    ALists[LApps[I].LineNumber] := LS;
+  begin
+    LS := Format('    %sApplication.SetTitle("%s")', [GetPkgName, ATitle]);
+    if I = -1 then
+    begin
+      I := IndexNameOf('Initialize');
+      ALists.Insert(LApps[I].LineNumber, LS);
+      UpdateLineNumber(I, 1);
+    end else
+      ALists[LApps[I].LineNumber] := LS;
+  end;
 
 
   // SetScaled
