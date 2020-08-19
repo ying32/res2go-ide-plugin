@@ -4,6 +4,7 @@
 
 * 1、增加Lazarus IDE中直接设置应用程序标题"Application.SetTitle"。
 * 2、增加"使用默认winappres"包选项。
+* 3、如果设置中"PackageName"指定了其它包名，如果main.go中未导入，则导入相对路径的包名。
 
 #### v1.0.6
 
