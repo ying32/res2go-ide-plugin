@@ -56,6 +56,9 @@ type
     FUseDefaultWinAppRes: Boolean;
     FUseOriginalFileName: Boolean;
 
+    FAddToLast: Boolean;
+    FModalResult: TModalResult;
+
 
     function GetDefaultProjectParam: TProjParam;
     function GetLang: TLangBase;
@@ -75,6 +78,7 @@ type
 
     function GetProjectPath: string;
     function IsMainPackage: Boolean;
+    procedure SetEnabledCovert(AValue: Boolean);
     procedure SetPackageName(AValue: string);
   public
     constructor Create;
@@ -83,7 +87,23 @@ type
     function onSaveEditorFile(Sender: TObject; aFile: TLazProjectFile; SaveStep: TSaveEditorFileStep; TargetFilename: string): TModalResult;
     function onProjectOpened(Sender: TObject; AProject: TLazProject): TModalResult;
 
-    property EnabledConvert: Boolean read FEnabledCovert write FEnabledCovert;
+    function onProjectBuilding(Sender: TObject): TModalResult;
+    procedure onProjectBuildingFinished(Sender: TObject; BuildSuccessful: Boolean);
+    function onProjectDependenciesCompiling(Sender: TObject): TModalResult;
+    function onProjectDependenciesCompiled(Sender: TObject): TModalResult;
+    function onLazarusBuilding(Sender: TObject): TModalResult;
+    procedure onLazarusBuildingFinished(Sender: TObject; BuildSuccessful: Boolean);
+    function onRunDebug(Sender: TObject; var Handled: boolean): TModalResult;
+    function onRunWithoutDebugBuilding(Sender: TObject; var Handled: boolean): TModalResult;
+    function onRunWithoutDebugInit(Sender: TObject; var Handled: boolean): TModalResult;
+    procedure onRunFinished(Sender: TObject);
+
+
+
+    class procedure AddHandlers;
+    class procedure RemoveHandlers;
+
+    property EnabledConvert: Boolean read FEnabledCovert write SetEnabledCovert;
     property OutputPath: string read FOutputPath write FOutputPath;
     property UseOriginalFileName: Boolean read FUseOriginalFileName write FUseOriginalFileName;
     property SaveGfmFile: Boolean read FSaveGfmFile write FSaveGfmFile;
@@ -130,14 +150,11 @@ implementation
 uses
   ugolang;
 
+
 procedure Register;
 begin
-  if Assigned(LazarusIDE) then
-  begin
-    LazarusIDE.AddHandlerOnSavedAll(@MyIDEIntf.onSaveAll, True);
-    LazarusIDE.AddHandlerOnSaveEditorFile(@MyIDEIntf.onSaveEditorFile, True);
-    LazarusIDE.AddHandlerOnProjectOpened(@MyIDEIntf.onProjectOpened, True);
-  end;
+  //TMyIDEIntf.AddHandlers;
+  Logs('MyIDEIntf.Register');
 end;
 
 
@@ -148,8 +165,7 @@ end;
 
 procedure UnInit;
 begin
-  if Assigned(LazarusIDE) then
-    LazarusIDE.RemoveAllHandlersOfObject(MyIDEIntf);
+  TMyIDEIntf.RemoveHandlers;
   MyIDEIntf.Free;
   MyIDEIntf := nil;
 end;
@@ -350,6 +366,16 @@ begin
   Result := PackageName.IsEmpty or PackageName.Equals('main');
 end;
 
+procedure TMyIDEIntf.SetEnabledCovert(AValue: Boolean);
+begin
+  if FEnabledCovert=AValue then Exit;
+  FEnabledCovert:=AValue;
+  if FEnabledCovert then
+    Self.AddHandlers
+  else
+    Self.RemoveHandlers;
+end;
+
 procedure TMyIDEIntf.SetPackageName(AValue: string);
 begin
   if FPackageName=AValue then Exit;
@@ -360,6 +386,8 @@ end;
 constructor TMyIDEIntf.Create;
 begin
   inherited Create;
+  FAddToLast := True;   // 测试时用，方便修改，最终要改为 False
+  FModalResult := mrOK; // 测试时用，方便修改，最终要改为 mrAbort
 end;
 
 destructor TMyIDEIntf.Destroy;
@@ -404,11 +432,130 @@ end;
 
 function TMyIDEIntf.onProjectOpened(Sender: TObject; AProject: TLazProject): TModalResult;
 begin
-
   //Logs('GetCompilerFilename=%s', [LazarusIDE.GetCompilerFilename]);
   //Logs('GetFPCompilerFilename=%s', [LazarusIDE.GetFPCompilerFilename]);
   //Logs('ActiveProject.Directory=%s', [LazarusIDE.ActiveProject.Directory]);
   Result := mrOk;
+end;
+
+function TMyIDEIntf.onProjectBuilding(Sender: TObject): TModalResult;
+begin
+  Logs('TMyIDEIntf.onProjectBuilding');
+  Result := FModalResult;
+end;
+
+procedure TMyIDEIntf.onProjectBuildingFinished(Sender: TObject;
+  BuildSuccessful: Boolean);
+begin
+  Logs('TMyIDEIntf.onProjectBuildingFinished');
+
+end;
+
+function TMyIDEIntf.onProjectDependenciesCompiling(Sender: TObject): TModalResult;
+begin
+  Logs('TMyIDEIntf.onProjectDependenciesCompiling');
+  Result := FModalResult;
+end;
+
+function TMyIDEIntf.onProjectDependenciesCompiled(Sender: TObject): TModalResult;
+begin
+  Logs('TMyIDEIntf.onProjectDependenciesCompiled');
+  Result := FModalResult;
+end;
+
+function TMyIDEIntf.onLazarusBuilding(Sender: TObject): TModalResult;
+begin
+  Logs('TMyIDEIntf.onLazarusBuilding');
+  Result := FModalResult;
+end;
+
+procedure TMyIDEIntf.onLazarusBuildingFinished(Sender: TObject;
+  BuildSuccessful: Boolean);
+begin
+  Logs('TMyIDEIntf.onLazarusBuildingFinished');
+end;
+
+function TMyIDEIntf.onRunDebug(Sender: TObject; var Handled: boolean): TModalResult;
+begin
+  Logs('TMyIDEIntf.onRunDebug');
+  Result := FModalResult;
+end;
+
+function TMyIDEIntf.onRunWithoutDebugBuilding(Sender: TObject;
+  var Handled: boolean): TModalResult;
+begin
+  Logs('TMyIDEIntf.onRunWithoutDebugBuilding');
+  Result := FModalResult;
+end;
+
+function TMyIDEIntf.onRunWithoutDebugInit(Sender: TObject; var Handled: boolean): TModalResult;
+begin
+   Logs('TMyIDEIntf.onRunWithoutDebugInit');
+   Result := FModalResult;
+end;
+
+procedure TMyIDEIntf.onRunFinished(Sender: TObject);
+begin
+  Logs('TMyIDEIntf.onRunFinished');
+end;
+
+class procedure TMyIDEIntf.AddHandlers;
+begin
+  if Assigned(LazarusIDE) then
+  begin
+    Logs('MyIDEIntf.AddHandlers');
+    with MyIDEIntf do
+    begin
+      LazarusIDE.AddHandlerOnSavedAll(@onSaveAll, True);
+      LazarusIDE.AddHandlerOnSaveEditorFile(@onSaveEditorFile, True);
+      LazarusIDE.AddHandlerOnProjectOpened(@onProjectOpened, True);
+
+      //// complie
+      //[4968] TMyIDEIntf.onProjectBuilding
+      //[4968] TMyIDEIntf.onProjectDependenciesCompiling
+      //[4968] TMyIDEIntf.onProjectDependenciesCompiled
+      //[4968] TMyIDEIntf.onProjectBuildingFinished
+      //
+      //// debug
+      //[4968] TMyIDEIntf.onProjectBuilding
+      //[4968] TMyIDEIntf.onProjectDependenciesCompiling
+      //[4968] TMyIDEIntf.onProjectDependenciesCompiled
+      //[4968] TMyIDEIntf.onProjectBuildingFinished
+      //[4968] TMyIDEIntf.onRunDebug
+      //[4968] TMyIDEIntf.onRunFinished
+      //
+      //// run without debug
+      //[4968] TMyIDEIntf.onRunFinished
+      //[4968] TMyIDEIntf.onRunWithoutDebugBuilding
+      //[4968] TMyIDEIntf.onProjectBuilding
+      //[4968] TMyIDEIntf.onProjectDependenciesCompiling
+      //[4968] TMyIDEIntf.onProjectDependenciesCompiled
+      //[4968] TMyIDEIntf.onProjectBuildingFinished
+      //[4968] TMyIDEIntf.onRunWithoutDebugInit
+
+
+      // 编译
+      //LazarusIDE.AddHandlerOnProjectBuilding(@onProjectBuilding, FAddToLast);
+      //LazarusIDE.AddHandlerOnProjectBuildingFinished(@onProjectBuildingFinished, FAddToLast);
+      //LazarusIDE.AddHandlerOnProjectDependenciesCompiling(@onProjectDependenciesCompiling, FAddToLast);
+      //LazarusIDE.AddHandlerOnProjectDependenciesCompiled(@onProjectDependenciesCompiled, FAddToLast);
+      //LazarusIDE.AddHandlerOnLazarusBuilding(@onLazarusBuilding, FAddToLast);
+      //LazarusIDE.AddHandlerOnLazarusBuildingFinished(@onLazarusBuildingFinished, FAddToLast);
+      //LazarusIDE.AddHandlerOnRunDebug(@onRunDebug, FAddToLast);
+      //LazarusIDE.AddHandlerOnRunWithoutDebugBuilding(@onRunWithoutDebugBuilding, FAddToLast);
+      //LazarusIDE.AddHandlerOnRunWithoutDebugInit(@onRunWithoutDebugInit, FAddToLast);
+      //LazarusIDE.AddHandlerOnRunFinished(@onRunFinished, FAddToLast);
+    end;
+  end;
+end;
+
+class procedure TMyIDEIntf.RemoveHandlers;
+begin
+  if Assigned(LazarusIDE) and Assigned(MyIDEIntf) then
+  begin
+    LazarusIDE.RemoveAllHandlersOfObject(MyIDEIntf);
+    Logs('MyIDEIntf.Removehandlers');
+  end;
 end;
 
 
