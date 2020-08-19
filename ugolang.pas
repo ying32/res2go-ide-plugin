@@ -38,7 +38,7 @@ type
 
     function GetPackageImportPath(const AOutPath: string): string;
 
-    procedure AddOrRemoveImports(ALists: TStrings; AAdds, ARemoves: array of string);
+    procedure AddOrRemoveImports(ALists: TStrings; AAdds, ARemoves: array of string; AUIPackageName: string);
     procedure ProcessMainFunc(ALists: TStrings; ATitle: string; AUseScaled: Boolean; AForms: array of string);
   protected
     procedure InitTypeLists; override;
@@ -105,9 +105,9 @@ begin
       LMainFile.LoadFromFile(LSaveFileName);
 
       if AParam.UseDefaultWinAppRes then
-        AddOrRemoveImports(LMainFile, PkgArr, [])
+        AddOrRemoveImports(LMainFile, PkgArr, [], Self.PackageName)
       else
-        AddOrRemoveImports(LMainFile, [], PkgArr);
+        AddOrRemoveImports(LMainFile, [], PkgArr, Self.PackageName);
 
       ProcessMainFunc(LMainFile, AParam.Title, AParam.UseScaled, GetForms);
     end;
@@ -573,7 +573,7 @@ begin
 end;
 
 procedure TGoLang.AddOrRemoveImports(ALists: TStrings; AAdds,
-  ARemoves: array of string);
+  ARemoves: array of string; AUIPackageName: string);
 const
   Keywords: array[0..3] of string = ('var', 'const', 'type', 'func');
 
@@ -629,6 +629,11 @@ var
     end;
   end;
 
+  function LastItem: TImportItem;
+  begin
+    Result := LImports[High(LImports)];
+  end;
+
   function IndexPkgNameOf(APath: string): Integer;
   var
     J: Integer;
@@ -636,6 +641,16 @@ var
     Result := -1;
     for J := 0 to High(LImports) do
       if LImports[J].Path = GetRealImportPath(APath) then
+        Exit(J);
+  end;
+
+  function IndexUIPkgNameOf: Integer;
+  var
+    J: Integer;
+  begin
+    Result := -1;
+    for J := 0 to High(LImports) do
+      if LImports[J].Path.EndsWith('/'+ AUIPackageName) then
         Exit(J);
   end;
 
@@ -720,8 +735,11 @@ begin
   begin
     if Length(LImports) > 0 then
     begin
-      LInsertStartIndex := LImports[High(LImports)].LineNumber;
-      LIsSingle := LImports[High(LImports)].&Single;
+      with LastItem do
+      begin
+        LInsertStartIndex := LineNumber;
+        LIsSingle := &Single;
+      end;
     end else
     begin
       LInsertStartIndex := LPkgLineNumber + 2;
@@ -729,7 +747,6 @@ begin
       ALists.Insert(LInsertStartIndex, 'import (');
       LIsSingle := False;
     end;
-
     // 添加
     for LS in AAdds do
     begin
@@ -739,10 +756,27 @@ begin
           ALists.Insert(LInsertStartIndex + 1, 'import ' + LS)
         else
           ALists.Insert(LInsertStartIndex + 1, '    ' + LS);
+        UpdateLineNumber(I, 1);
       end;
     end;
   end;
 
+  // 独立检查的
+  if (AUIPackageName <> '') and (Length(LImports) > 0) then
+  begin
+    I := IndexUIPkgNameOf;
+    if I = -1 then
+    begin
+      with LastItem do
+      begin
+        LS := '"./' + AUIPackageName + '"';
+        if &Single then
+          ALists.Insert(LineNumber + 1, 'import ' + LS)
+        else
+          ALists.Insert(LineNumber + 1, '    ' + LS);
+      end;
+    end;
+  end;
 end;
 
 procedure TGoLang.ProcessMainFunc(ALists: TStrings; ATitle: string;
