@@ -49,6 +49,10 @@ msgstr ""
 msgid "Save gfm File"
 msgstr ""
 
+#: res2goresources.rsusedefaultwinappres
+msgid "Use Default winappres"
+msgstr ""
+
 #: res2goresources.rsuseoriginalfilename
 msgid "Use Original File Name"
 msgstr ""

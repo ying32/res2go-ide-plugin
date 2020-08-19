@@ -1,10 +1,15 @@
+//----------------------------------------
+//
+// Copyright © ying32. All Rights Reserved.
+//
+// Licensed under Lazarus.modifiedLGPL
+//
+//----------------------------------------
 unit res2goResources;
 
 {$mode objfpc}{$H+}
 
 interface
-
-
 
 resourceString
   rsMsgTransformFile = 'Transform file: %s ';
@@ -22,6 +27,7 @@ resourceString
   rsOutputPathEg = 'eg:  "code" or "$Path($ProjectFile())code" or "C:\LzUI" ';
   rsOutputLang = 'Output Lang:';
   rsPackageName = 'Package Name:';
+  rsUseDefaultWinAppRes = 'Use Default winappres';
 
 implementation
 

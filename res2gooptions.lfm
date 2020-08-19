@@ -21,7 +21,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   object lblOutputPath: TLabeledEdit
     Left = 88
     Height = 25
-    Top = 56
+    Top = 96
     Width = 400
     EditLabel.Height = 17
     EditLabel.Width = 72
@@ -33,7 +33,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   object Label1: TLabel
     Left = 88
     Height = 17
-    Top = 93
+    Top = 133
     Width = 60
     Caption = 'eg:  code/'
     ParentColor = False
@@ -58,7 +58,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   object lblOutLang: TLabel
     Left = 9
     Height = 17
-    Top = 140
+    Top = 170
     Width = 75
     Caption = 'Output Lang:'
     ParentColor = False
@@ -66,7 +66,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   object cbbLangs: TComboBox
     Left = 88
     Height = 25
-    Top = 136
+    Top = 166
     Width = 132
     ItemHeight = 17
     ItemIndex = 0
@@ -82,7 +82,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   object lblPkgName: TLabeledEdit
     Left = 344
     Height = 25
-    Top = 136
+    Top = 166
     Width = 144
     EditLabel.Height = 17
     EditLabel.Width = 100
@@ -91,5 +91,13 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
     LabelPosition = lpLeft
     TabOrder = 5
     Text = 'main'
+  end
+  object chkUseDefaultWinAppRes: TCheckBox
+    Left = 16
+    Height = 21
+    Top = 56
+    Width = 152
+    Caption = 'Use default winappres'
+    TabOrder = 6
   end
 end

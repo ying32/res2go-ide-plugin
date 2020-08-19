@@ -34,6 +34,7 @@ type
     FOutputPath: string;
     FPakcageName: string;
     FSaveGfmFile: Boolean;
+    FUseDefaultWinAppRes: Boolean;
     FUseOriginalFileName: Boolean;
 
     procedure SetEnabled(AValue: Boolean);
@@ -41,6 +42,7 @@ type
     procedure SetOutputPath(AValue: string);
     procedure SetPackageName(AValue: string);
     procedure SetSaveGfmFile(AValue: Boolean);
+    procedure SetUseDefaultWinAppRes(AValue: Boolean);
     procedure SetUseOriginalFileName(AValue: Boolean);
 
   public
@@ -54,11 +56,13 @@ type
     property SaveGfmFile: Boolean read FSaveGfmFile write SetSaveGfmFile;
     property OutLang: TOutLang read FOutLang write SetOutLang;
     property PackageName: string read FPakcageName write SetPackageName;
+    property UseDefaultWinAppRes: Boolean read FUseDefaultWinAppRes write SetUseDefaultWinAppRes;
   end;
 
   { TRes2goOptionsFrame }
 
   TRes2goOptionsFrame = class(TAbstractIDEOptionsEditor)
+    chkUseDefaultWinAppRes: TCheckBox;
     chkSaveGfmFile: TCheckBox;
     chkEanbledConvert: TCheckBox;
     chkUseOriginalFileName: TCheckBox;
@@ -127,6 +131,13 @@ begin
   Self.Modified:=True;
 end;
 
+procedure TProjectRes2goRes.SetUseDefaultWinAppRes(AValue: Boolean);
+begin
+  if FUseDefaultWinAppRes=AValue then Exit;
+  FUseDefaultWinAppRes:=AValue;
+  Self.Modified:=True;
+end;
+
 procedure TProjectRes2goRes.SetUseOriginalFileName(AValue: Boolean);
 begin
   if FUseOriginalFileName=AValue then Exit;
@@ -156,6 +167,7 @@ begin
     SetDeleteValue(Path+'Res2go/SaveGfmFile/Value', SaveGfmFile, False);
     SetDeleteValue(Path+'Res2go/OutLang/Value', Integer(OutLang), 0);
     SetDeleteValue(Path+'Res2go/PackageName/Value', PackageName, 'main');
+    SetDeleteValue(Path+'Res2go/UseDefaultWinAppRes/Value', UseDefaultWinAppRes, False);
   end;
 end;
 
@@ -170,6 +182,7 @@ begin
     SaveGfmFile := GetValue(Path+'Res2go/SaveGfmFile/Value', False);
     OutLang := TOutLang(GetValue(Path+'Res2go/SaveGfmFile/Value', 0));
     PackageName := GetValue(Path+'Res2go/PackageName/Value', 'main');
+    UseDefaultWinAppRes := GetValue(Path+'Res2go/UseDefaultWinAppRes/Value', False);
   end;
 
   if Assigned(MyIDEIntf) then
@@ -180,6 +193,7 @@ begin
     MyIDEIntf.SaveGfmFile := SaveGfmFile;
     MyIDEIntf.OutLang:=OutLang;
     MyIDEIntf.PackageName:=PackageName;
+    MyIDEIntf.UseDefaultWinAppRes := UseDefaultWinAppRes;
   end;
 end;
 
@@ -203,6 +217,7 @@ begin
   Label1.Caption:=rsOutputPathEg;
   lblOutLang.Caption:=rsOutputLang;
   lblPkgName.EditLabel.Caption:=rsPackageName;
+  chkUseDefaultWinAppRes.Caption:=rsUseDefaultWinAppRes;
 end;
 
 destructor TRes2goOptionsFrame.Destroy;
@@ -238,6 +253,7 @@ begin
       MyIDEIntf.SaveGfmFile := LRes.SaveGfmFile;
       MyIDEIntf.OutLang := LRes.OutLang;
       MyIDEIntf.PackageName:=LRes.PackageName;
+      MyIDEIntf.UseDefaultWinAppRes := LRes.UseDefaultWinAppRes;
 
       chkEanbledConvert.Checked := MyIDEIntf.EnabledConvert;
       lblOutputPath.Text := MyIDEIntf.OutputPath;
@@ -245,6 +261,7 @@ begin
       ChkSaveGfmFile.Checked := MyIDEIntf.SaveGfmFile;
       cbbLangs.ItemIndex:=Integer(MyIDEIntf.OutLang);
       lblPkgName.Text:=MyIDEIntf.PackageName;
+      chkUseDefaultWinAppRes.Checked:=MyIDEIntf.UseDefaultWinAppRes;
     end;
   end;
 end;
@@ -264,6 +281,7 @@ begin
       MyIDEIntf.SaveGfmFile := chkSaveGfmFile.Checked;
       MyIDEIntf.OutLang:=TOutLang(cbbLangs.ItemIndex);
       MyIDEIntf.PackageName:=Trim(lblPkgName.Text);
+      MyIDEIntf.UseDefaultWinAppRes := chkUseDefaultWinAppRes.Checked;
 
       LRes.OutputPath := MyIDEIntf.OutputPath;
       LRes.Enabled := MyIDEIntf.EnabledConvert;
@@ -271,6 +289,7 @@ begin
       LRes.SaveGfmFile := MyIDEIntf.SaveGfmFile;
       LRes.OutLang:=MyIDEIntf.OutLang;
       LRes.PackageName:=MyIDEIntf.PackageName;
+      LRes.UseDefaultWinAppRes := MyIDEIntf.UseDefaultWinAppRes;
     end;
   end;
 end;

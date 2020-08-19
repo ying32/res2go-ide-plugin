@@ -49,11 +49,13 @@ type
     FReConvertRes: Boolean;
     FResFileName: string;
     FSaveGfmFile: Boolean;
+    FUseDefaultWinAppRes: Boolean;
     FUseOriginalFileName: Boolean;
-    FUseScaled: Boolean;
 
     function GetCompilerPath: string;
+    function GetDefaultProjectParam: TProjParam;
     function GetLang: TLangBase;
+
     function GetProjectTitle: string;
     function GetRealOutputPackagePath: string;
     function GetRealOutputPath: string;
@@ -62,7 +64,6 @@ type
     procedure SaveComponents(ADesigner: TIDesigner; AUnitFileName, AOutPath: string);
     procedure OnWriteMethodProperty(Writer: TWriter; Instance: TPersistent; PropInfo: PPropInfo;
       const MethodValue, DefMethodValue: TMethod; var Handled: boolean);
-
 
     procedure CheckAndCreateDir;
     procedure ExeuteConvertRes(const AResFileName, APath: string);
@@ -86,6 +87,9 @@ type
     property PackageName: string read FPackageName write SetPackageName;
     property UseScaled: Boolean read GetUseScaled;
     property ProjectTitle: string read GetProjectTitle;
+    property UseDefaultWinAppRes: Boolean read FUseDefaultWinAppRes write FUseDefaultWinAppRes;
+
+    property DefaultProjectParam: TProjParam read GetDefaultProjectParam;
 
 
     property Lang: TLangBase read GetLang;
@@ -95,6 +99,7 @@ type
     property RealOutputPackagePath: string read GetRealOutputPackagePath;
     property CompilerPath: string read GetCompilerPath;
     property WindResFileName: string read GetWindResFileName;
+
 
     property ReConvertRes: Boolean read FReConvertRes write FReConvertRes;
     property ResFileName: string read FResFileName write FResFileName;
@@ -259,6 +264,11 @@ begin
   //  IDEmacros.SubstituteMacros(Result);
   //  Result := ExtractFilePath(Result);
   //end;
+end;
+
+function TMyIDEIntf.GetDefaultProjectParam: TProjParam;
+begin
+  Result := TProjParam.Create(Self.ProjectTitle, Self.UseScaled, Self.UseDefaultWinAppRes);
 end;
 
 function TMyIDEIntf.GetRealOutputPackagePath: string;
@@ -433,25 +443,13 @@ begin
 end;
 
 function TMyIDEIntf.onSaveAll(Sender: TObject): TModalResult;
-var
-  I: Integer;
-  LExt, LFileName: string;
 begin
   if EnabledConvert then
   begin
     ClearMsg;
     CheckAndCreateDir;
-    for I := 0 to LazarusIDE.ActiveProject.FileCount - 1 do
-    begin
-      LFileName := LazarusIDE.ActiveProject.Files[I].FileName;
-      LExt := ExtractFileExt(LFileName);
-      if SameText(LExt, '.lpr') then
-      begin
-        Lang.ConvertProjectFile(LFileName, RealOutputPath, ProjectTitle, UseScaled);
-        Break;
-      end
-    end;
-    if ReConvertRes then
+    Lang.ConvertProjectFile(RealOutputPath, DefaultProjectParam);
+    if ReConvertRes and (not UseDefaultWinAppRes) then
     begin
       ReConvertRes := False;
       ExeuteConvertRes(ResFileName, RealOutputPath);

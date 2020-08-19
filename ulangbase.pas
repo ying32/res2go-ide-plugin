@@ -1,11 +1,29 @@
+//----------------------------------------
+//
+// Copyright © ying32. All Rights Reserved.
+//
+// Licensed under Lazarus.modifiedLGPL
+//
+//----------------------------------------
 unit uLangBase;
 
 {$mode objfpc}{$H+}
+{$modeswitch advancedrecords}
+//{$modeswitch class}
 
 interface
 
 uses
-  Classes, SysUtils, StrUtils, Forms, TypInfo, uSupports, IDEExternToolIntf, res2goResources;
+  Classes,
+  SysUtils,
+  StrUtils,
+  Forms,
+  TypInfo,
+  LazFileUtils,
+  IDEExternToolIntf,
+  LazIDEIntf,
+  uSupports,
+  res2goResources;
 
 type
 
@@ -19,9 +37,22 @@ type
 
   TFnParams = array of TFnParam;
 
+  TVaildForms = array of string;
+
+  { TProjParam }
+
+  TProjParam = record
+    Title: string;
+    UseScaled: Boolean;
+    UseDefaultWinAppRes: Boolean;
+  public
+    constructor Create(ATitle: string; AUseScaled, AUseDefaultWinAppRes: Boolean);
+  end;
+
   TLangBase = class
   private
     FPackageName: string;
+    function GetProjectLPRFileName: string;
   protected
     FTypeLists: TTypeLists;
     FBaseTypes: TTypeLists;
@@ -30,6 +61,7 @@ type
     procedure InitBaseTypes; virtual; abstract;
     function GetParams(AProp: PPropInfo): TFnParams;
     function FirstCaseChar(Astr: string): string;
+    function GetVaildForms: TVaildForms;
 
     function IsMainPackage: Boolean;
   public
@@ -37,13 +69,24 @@ type
     destructor Destroy; override;
 
     property PackageName: string read FPackageName write FPackageName;
+    property ProjectLPRFileName: string read GetProjectLPRFileName;
 
-    procedure ConvertProjectFile(const AFileName, AOutPath, ATitle: string; AUseScaled: Boolean); virtual; abstract;
+    procedure ConvertProjectFile(const AOutPath: string; AParam: TProjParam); virtual; abstract;
     function ToEventString(AProp: PPropInfo): string; virtual; abstract;
     procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream); virtual; abstract;
   end;
 
 implementation
+
+{ TProjParam }
+
+constructor TProjParam.Create(ATitle: string; AUseScaled,
+  AUseDefaultWinAppRes: Boolean);
+begin
+  Self.Title:=ATitle;
+  Self.UseScaled:=AUseScaled;
+  Self.UseDefaultWinAppRes := AUseDefaultWinAppRes;
+end;
 
 { TLangBase }
 
@@ -65,16 +108,21 @@ begin
   inherited Destroy;
 end;
 
+function TLangBase.GetProjectLPRFileName: string;
+begin
+  Result := ChangeFileExt(LazarusIDE.ActiveProject.ProjectInfoFile, '.lpr');
+end;
 
 function TLangBase.GetParams(AProp: PPropInfo): TFnParams;
 var
   LTypeData: PTypeData;
   I: Integer;
 
-  LFlags: TParamFlags;
-  LParamName, LParamType: string;
+  LFlags: TParamFlags = [];
+  LParamName: string = '';
+  LParamType: string = '';
   LMem: TMemoryStream;
-  LLen: Byte;
+  LLen: Byte = 0;
 begin
   Result := nil;
   // 处理参数
@@ -119,6 +167,38 @@ begin
   Result := Astr;
   if Length(Result) > 0 then
     Result[1] := LowerCase(Result[1]);
+end;
+
+function TLangBase.GetVaildForms: TVaildForms;
+var
+  LLPRFileName, S: string;
+  LStrs: TStringList;
+  LP: Integer;
+begin
+  Result := nil;
+  if Assigned(LazarusIDE) and Assigned(LazarusIDE.ActiveProject) then
+  begin
+    LLPRFileName := ProjectLPRFileName;
+    if FileExists(LLPRFileName) then
+    begin
+      LStrs := TStringList.Create;
+      try
+        LStrs.LoadFromFile(LLPRFileName);
+        for S in LStrs do
+        begin
+          // 开始提取 Application.CreateForm的
+          if S.Trim.StartsWith('Application.CreateForm(') then
+          begin
+            SetLength(Result, Length(Result) + 1);
+            LP := S.IndexOf(',');
+            Result[High(Result)] := Trim(S.Substring(LP + 1, S.IndexOf(')') - LP - 1));
+          end;
+        end;
+      finally
+        LStrs.Free;
+      end;
+    end;
+  end;
 end;
 
 function TLangBase.IsMainPackage: Boolean;

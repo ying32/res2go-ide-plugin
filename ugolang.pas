@@ -24,12 +24,14 @@ type
     function IsBaseType(AType: string): Boolean;
     function IsInterfaceType(AType: string): Boolean;
     procedure CreateImplFile(AFileName: string; AEvents: array of TEventItem; AFormName: string);
+    procedure CreateNewMain(AStrs: TStrings; AParam: TProjParam);
+    function GetPrefixPackage: string;
   protected
     procedure InitTypeLists; override;
     procedure InitBaseTypes; override;
   public
     constructor Create;
-    procedure ConvertProjectFile(const AFileName, AOutPath, ATitle: string; AUseScaled: Boolean); override;
+    procedure ConvertProjectFile(const AOutPath: string; AParam: TProjParam); override;
     function ToEventString(AProp: PPropInfo): string; override;
     procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream); override;
   end;
@@ -50,12 +52,11 @@ begin
   inherited Create;
 end;
 
-procedure TGoLang.ConvertProjectFile(const AFileName, AOutPath, ATitle: string;
-  AUseScaled: Boolean);
+procedure TGoLang.ConvertProjectFile(const AOutPath: string; AParam: TProjParam);
 
   function UseScaledStr: string;
   begin
-    if AUseScaled then Result := 'true' else Result := 'false';
+    if AParam.UseScaled then Result := 'true' else Result := 'false';
   end;
 
   function ScaledStr: string;
@@ -65,32 +66,24 @@ procedure TGoLang.ConvertProjectFile(const AFileName, AOutPath, ATitle: string;
 
   function TitleStr: string;
   begin
-    Result := '    vcl.Application.SetTitle("' + ATitle + '")';
+    Result := '    vcl.Application.SetTitle("' + AParam.Title + '")';
   end;
 
 var
-  LStrs, LMainDotGo: TStringList;
+  LMainDotGo: TStringList;
   S, LVarName, LFormName, LSaveFileName: string;
   LP: integer;
-  LFile: TStringStream;
   LMainFileExists: boolean;
-  LForms: array of string;
+  LForms: TVaildForms;
   LIndex, I: integer;
   LPkg: string;
-  LProjFile: TFileStream;
 begin
-  LStrs := TStringList.Create;
+
   LMainDotGo := TStringList.Create;
   try
     LSaveFileName := AOutPath + 'main.go';
     LMainFileExists := FileExists(LSaveFileName);
-    LProjFile := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
-    try
-      LProjFile.Position := 0;
-      LStrs.LoadFromStream(LProjFile);
-    finally
-      LProjFile.Free;
-    end;
+
     // 如果不存在 main.go文件，则新建一个
     if not LMainFileExists then
     begin
@@ -115,6 +108,8 @@ begin
     else
       // 存在则加载此文件
       LMainDotGo.LoadFromFile(LSaveFileName);
+
+    LForms := GetVaildForms;
 
     for S in LStrs do
     begin
@@ -183,13 +178,16 @@ begin
       LMainDotGo.Add('}');
     end;
 
-    LFile := TStringStream.Create('');
-    try
-      LFile.WriteString(LMainDotGo.Text);
-      LFile.SaveToFile(LSaveFileName);
-    finally
-      LFile.Free;
-    end;
+
+    LMainDotGo.SaveToFile(LSaveFileName);
+
+    //LFile := TStringStream.Create('');
+    //try
+    //  LFile.WriteString(LMainDotGo.Text);
+    //  LFile.SaveToFile(LSaveFileName);
+    //finally
+    //  LFile.Free;
+    //end;
   finally
     LMainDotGo.Free;
     LStrs.Free;
@@ -545,7 +543,62 @@ begin
   end;
 end;
 
+procedure TGoLang.CreateNewMain(AStrs: TStrings; AParam: TProjParam);
+var
+  LForms: TVaildForms;
+  LS: string;
+begin
+  with AStrs do
+  begin
+    Add('// ' + rsAutomaticallyGeneratedByTheRes2go);
+    Add('package main');  // main.go文件始终都必须为main
+    Add('');
+    Add('import (');
+    Add('    "github.com/ying32/govcl/vcl"');
+    // winappres
+    if AParam.UseDefaultWinAppRes then
+      Add('    _ "github.com/ying32/govcl/pkgs/winappres"');
 
+    // 初始添加一个本地导入包的
+    // 还要判断当前目标目录在GOPATH中？？？不然要应用不同的规则
+    if not IsMainPackage then
+      Add('    "./%s"', [Self.PackageName]);
+
+
+    Add(')');
+    Add('');
+    Add('func main() {');
+    Add('');
+
+    // scaled
+    if AParam.UseScaled then
+      Add('    vcl.Application.SetScaled(true)');
+
+    // title
+    if AParam.Title <> '' then
+      Add('    vcl.Application.SetTitle("%s")', [AParam.Title]);
+
+    Add('    vcl.Application.Initialize()');
+    Add('    vcl.Application.SetMainFormOnTaskBar(true)');
+
+    // forms
+    LForms := Self.GetVaildForms;
+    for LS in LForms do
+    begin
+      Add('    vcl.Application.CreateForm(&%s%s)', [GetPrefixPackage, LS]);
+    end;
+
+    Add('    vcl.Application.Run()');
+    Add('}');
+  end;
+end;
+
+function TGoLang.GetPrefixPackage: string;
+begin
+  Result := '';
+  if not IsMainPackage then
+    Result := PackageName + '.';
+end;
 
 procedure TGoLang.InitTypeLists;
 begin

@@ -49,6 +49,10 @@ msgstr "注册Form资源  "
 msgid "Save gfm File"
 msgstr "保存gfm文件"
 
+#: res2goresources.rsusedefaultwinappres
+msgid "Use Default winappres"
+msgstr "使用默认的winappres"
+
 #: res2goresources.rsuseoriginalfilename
 msgid "Use Original File Name"
 msgstr "使用原始文件名"
