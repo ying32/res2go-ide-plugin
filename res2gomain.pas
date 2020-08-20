@@ -51,7 +51,7 @@ type
   private
     FEvents: array of TEventItem;
 
-    FEnabledCovert: Boolean;
+    FEnabledConvert: Boolean;
     FOutLang: TOutLang;
     FOutputPath: string;
     FPackageName: string;
@@ -85,7 +85,7 @@ type
 
     function GetProjectPath: string;
 
-    procedure SetEnabledCovert(AValue: Boolean);
+    procedure SetEnabledConvert(AValue: Boolean);
     procedure SetPackageName(AValue: string);
   public
     constructor Create;
@@ -111,7 +111,7 @@ type
     class procedure AddHandlers;
     class procedure RemoveHandlers;
 
-    property EnabledConvert: Boolean read FEnabledCovert write SetEnabledCovert;
+    property EnabledConvert: Boolean read FEnabledConvert write SetEnabledConvert;
     property OutputPath: string read FOutputPath write FOutputPath;
     property UseOriginalFileName: Boolean read FUseOriginalFileName write FUseOriginalFileName;
     property SaveGfmFile: Boolean read FSaveGfmFile write FSaveGfmFile;
@@ -384,11 +384,11 @@ begin
    // Result := ExtractFilePath(LazarusIDE.ActiveProject.ProjectInfoFile);
 end;
 
-procedure TMyIDEIntf.SetEnabledCovert(AValue: Boolean);
+procedure TMyIDEIntf.SetEnabledConvert(AValue: Boolean);
 begin
-  if FEnabledCovert=AValue then Exit;
-  FEnabledCovert:=AValue;
-  if FEnabledCovert then
+  if FEnabledConvert=AValue then Exit;
+  FEnabledConvert:=AValue;
+  if FEnabledConvert then
     Self.AddHandlers
   else
     Self.RemoveHandlers;
