@@ -40,6 +40,11 @@ type
 
   TVaildForms = array of string;
 
+  TComplieParam = record
+    Input: string;
+    Output: string;
+  end;
+
   { TProjParam }
 
   TProjParam = record
@@ -65,13 +70,16 @@ type
     function GetParams(AProp: PPropInfo): TFnParams;
     function FirstCaseChar(Astr: string): string;
     function GetVaildForms: TVaildForms;
-    procedure ExecuteCommand(const ACmds: array of string; AWait: Boolean);
     function GetResFileExists: Boolean; virtual;
 
     function IsMainPackage: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
+    function Complie(AParams: TComplieParam): Boolean; virtual; abstract;
+
+    procedure ExecuteCommand(const ACmds: array of string; AWait: Boolean; AShow: Boolean = False; AWorkDir: string = ''); overload;
+    procedure ExecuteCommand(const ACmd: string; AWait: Boolean; AShow: Boolean = False; AWorkDir: string = ''); overload;
 
     property PackageName: string read FPackageName write FPackageName;
     property ProjectLPRFileName: string read GetProjectLPRFileName;
@@ -221,7 +229,8 @@ begin
   end;
 end;
 
-procedure TLangBase.ExecuteCommand(const ACmds: array of string; AWait: Boolean);
+procedure TLangBase.ExecuteCommand(const ACmds: array of string;
+  AWait, AShow: Boolean; AWorkDir: string);
 var
   LProcess: TProcess;
   LCmd: string;
@@ -230,7 +239,12 @@ begin
   LProcess := TProcess.Create(nil);
   try
     LProcess.Options:= [];//[poWaitOnExit{, poNewProcessGroup, poStderrToOutPut}];
-    LProcess.ShowWindow := swoHIDE;
+    if AShow then
+      LProcess.ShowWindow := swoShowDefault
+    else
+      LProcess.ShowWindow := swoHIDE;
+    if AWorkDir <> '' then
+       LProcess.CurrentDirectory:=AWorkDir;
     for LCmd in ACmds do
     begin
       try
@@ -254,6 +268,12 @@ begin
   finally
     LProcess.Free;
   end;
+end;
+
+procedure TLangBase.ExecuteCommand(const ACmd: string; AWait, AShow: Boolean;
+  AWorkDir: string);
+begin
+  ExecuteCommand([ACmd], AWait, AShow, AWorkDir);
 end;
 
 function TLangBase.IsMainPackage: Boolean;

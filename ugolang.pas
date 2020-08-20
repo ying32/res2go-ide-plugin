@@ -19,6 +19,8 @@ uses
   TypInfo,
   LazFileUtils,
   IDEExternToolIntf,
+  LazIDEIntf,
+  CompOptsIntf,
   uSupports,
   res2goResources,
   uLangBase;
@@ -46,6 +48,7 @@ type
     function GetResFileExists: Boolean; override;
   public
     constructor Create;
+    function Complie(AParams: TComplieParam): Boolean; override;
 
     procedure ConvertProjectFile(AParam: TProjParam); override;
     function ToEventString(AProp: PPropInfo): string; override;
@@ -67,6 +70,43 @@ uses
 constructor TGoLang.Create;
 begin
   inherited Create;
+end;
+
+function TGoLang.Complie(AParams: TComplieParam): Boolean;
+var
+  LCmd, LCmd2, LNoCmdWindow: string;
+  LTool: TIDEExternalToolOptions;
+begin
+  Result := False;
+  if not Assigned(RunExternalTool) then
+    Exit;
+
+  LNoCmdWindow := '';
+{$ifdef windows}
+  if LazarusIDE.ActiveProject.LazCompilerOptions.Win32GraphicApp then
+    LNoCmdWindow := ' -ldflags="-H windowsgui"';
+{$endif}
+
+  LCmd := Format('build -i%s -o "%s"', [LNoCmdWindow, AParams.Output]);
+  LCmd2 := 'go ' + LCmd;
+  Logs('Complie Command: ' + LCmd2);
+  LTool := TIDEExternalToolOptions.Create;
+  try
+    LTool.Title := LCmd2;
+    LTool.Hint := LCmd2;
+    LTool.Executable := 'go'{$ifdef windows}+'.exe'{$endif};
+    LTool.WorkingDirectory := AParams.Input;
+    LTool.CmdLineParams := LCmd;
+    //Application.GetEnvironmentList(LTool.EnvironmentOverrides);
+    LTool.Parsers.Add(SubToolFPC);
+    LTool.Parsers.Add(SubToolDefault);
+    LTool.ShowConsole := True;
+    LTool.HideWindow := True;
+    LTool.ResolveMacros := True;
+    Result := RunExternalTool(LTool);
+  finally
+    LTool.Free;
+  end;
 end;
 
 procedure TGoLang.ConvertProjectFile(AParam: TProjParam);

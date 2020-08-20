@@ -5,6 +5,10 @@
 * 1、增加Lazarus IDE中直接设置应用程序标题"Application.SetTitle"。
 * 2、增加"使用默认winappres"包选项。
 * 3、如果设置中"PackageName"指定了其它包名，如果main.go中未导入，则导入相对路径的包名。
+* 4、拦截Lazarus的编译功能，更改为go的编译行为。
+* 5、工程选项中`Compiler Options -> Config and Target -> Win32 gui application (-WG)`可控制去除命令行窗口。
+* 6、`Project -> Run Parameters -> Command line parameters`可控制运行时传入的命令行。
+* 7、工程选项中`Compiler Options -> Paths -> Target file name(-o)`可控制生成的可执行文件名。
 
 #### v1.0.6
 

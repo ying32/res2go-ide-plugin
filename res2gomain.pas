@@ -24,12 +24,14 @@ uses
   StdCtrls,
   Buttons,
   Forms,
+  TypInfo,
   LazIDEIntf,
   ProjectIntf,
   IDEMsgIntf,
   IDEExternToolIntf,
+  IDEOptEditorIntf,
   FormEditingIntf,
-  TypInfo,
+  CompOptsIntf,
   usupports,
   res2goresources,
   uLangBase,
@@ -43,6 +45,9 @@ type
   { TMyIDEIntf }
 
   TMyIDEIntf = class
+  private const
+    EXT_GFM = '.gfm';
+    EXT_RES = '.res';
   private
     FEvents: array of TEventItem;
 
@@ -51,13 +56,13 @@ type
     FOutputPath: string;
     FPackageName: string;
     FReConvertRes: Boolean;
-    FResFileName: string;
     FSaveGfmFile: Boolean;
     FUseDefaultWinAppRes: Boolean;
     FUseOriginalFileName: Boolean;
 
     FAddToLast: Boolean;
     FModalResult: TModalResult;
+    FWithoutDebug: Boolean;
 
 
     function GetDefaultProjectParam: TProjParam;
@@ -67,6 +72,8 @@ type
     function GetRealOutputPackagePath: string;
     function GetRealOutputPath: string;
     function GetResFileName: string;
+    function GetTargetDir: string;
+    function GetTargetFile: string;
     function GetUseScaled: Boolean;
 
     procedure SaveComponents(ADesigner: TIDesigner; AUnitFileName, AOutPath: string);
@@ -97,6 +104,7 @@ type
     function onRunWithoutDebugBuilding(Sender: TObject; var Handled: boolean): TModalResult;
     function onRunWithoutDebugInit(Sender: TObject; var Handled: boolean): TModalResult;
     procedure onRunFinished(Sender: TObject);
+    procedure onChangeToolStatus(Sender: TObject; OldStatus, NewStatus: TLazToolStatus);
 
 
 
@@ -121,6 +129,9 @@ type
     property ProjectPath: string read GetProjectPath;
     property RealOutputPath: string read GetRealOutputPath;
     property RealOutputPackagePath: string read GetRealOutputPackagePath;
+
+    property TargetFile: string read GetTargetFile;
+    property TargetDir: string read GetTargetDir;
 
 
 
@@ -217,7 +228,7 @@ begin
         else
           LGfmFileName += ADesigner.LookupRoot.Name;
 
-        LGfmFileName += '.gfm';
+        LGfmFileName += EXT_GFM;
         LStream.Position := 0;
         LStream.SaveToFile(LGfmFileName);
       end;
@@ -245,7 +256,20 @@ end;
 
 function TMyIDEIntf.GetResFileName: string;
 begin
-  Result := ChangeFileExt(LazarusIDE.ActiveProject.ProjectInfoFile, '.res');
+  Result := ChangeFileExt(LazarusIDE.ActiveProject.ProjectInfoFile, EXT_RES);
+end;
+
+function TMyIDEIntf.GetTargetDir: string;
+begin
+  Result := RealOutputPath;
+  if (Result <> '') and (Result[Length(Result)] in AllowDirectorySeparators) then
+    Result := Copy(Result, 1, Length(Result) - 1);
+end;
+
+function TMyIDEIntf.GetTargetFile: string;
+begin
+  Result := '$TargetFile()';
+  IDEMacros.SubstituteMacros(Result);
 end;
 
 function TMyIDEIntf.GetUseScaled: Boolean;
@@ -386,8 +410,8 @@ end;
 constructor TMyIDEIntf.Create;
 begin
   inherited Create;
-  FAddToLast := True;   // 测试时用，方便修改，最终要改为 False
-  FModalResult := mrOK; // 测试时用，方便修改，最终要改为 mrAbort
+  FAddToLast := False;   // 测试时用，方便修改，最终要改为 False
+  FModalResult := mrCancel;//mrOK; // 测试时用，方便修改，最终要改为 mrAbort
 end;
 
 destructor TMyIDEIntf.Destroy;
@@ -432,6 +456,8 @@ end;
 
 function TMyIDEIntf.onProjectOpened(Sender: TObject; AProject: TLazProject): TModalResult;
 begin
+  Logs('ExtensionToLazSyntaxHighlighter=%d', [Integer(IDEEditorOptions.ExtensionToLazSyntaxHighlighter('.go'))]);
+  Logs('ExtensionToLazSyntaxHighlighter=%d', [Integer(IDEEditorOptions.ExtensionToLazSyntaxHighlighter('go'))]);
   //Logs('GetCompilerFilename=%s', [LazarusIDE.GetCompilerFilename]);
   //Logs('GetFPCompilerFilename=%s', [LazarusIDE.GetFPCompilerFilename]);
   //Logs('ActiveProject.Directory=%s', [LazarusIDE.ActiveProject.Directory]);
@@ -439,16 +465,69 @@ begin
 end;
 
 function TMyIDEIntf.onProjectBuilding(Sender: TObject): TModalResult;
+
+  function GetCompileReasons: TCompileReasons;
+  begin
+    Result := [];
+    try
+      PByte(@Result)^ := Byte(GetOrdProp(LazarusIDE.ActiveProject.LazCompilerOptions, 'CompileReasons'));
+    except
+    end;
+  end;
+
+var
+  LParams: TComplieParam;
+  LReasons: TCompileReasons;
 begin
-  Logs('TMyIDEIntf.onProjectBuilding');
+  //LReasons := GetCompileReasons;
+
+  //if crCompile in LReasons then
+  //  Logs('crCompile');
+  //if crBuild in LReasons then
+  //  Logs('crBuild');
+  //if crRun in LReasons then
+  //  Logs('crRun');
+
+  FWithoutDebug := True; // 总是真，没得区分是哪个按钮点的了。
+  Logs('TMyIDEIntf.onProjectBuilding: Status: ' + IntToStr(Integer(LazarusIDE.ToolStatus)));
+
+  LazarusIDE.DoShowMessagesView();
+
+  LazarusIDE.ToolStatus:=itBuilder;
+  try
+    LParams.Input := TargetDir;
+    LParams.Output := TargetFile;
+    onProjectBuildingFinished(Self, Lang.Complie(LParams));
+  finally
+    LazarusIDE.ToolStatus:=itNone;
+  end;
   Result := FModalResult;
 end;
 
 procedure TMyIDEIntf.onProjectBuildingFinished(Sender: TObject;
   BuildSuccessful: Boolean);
+var
+  LTargetFile, LTargetCmd: string;
 begin
-  Logs('TMyIDEIntf.onProjectBuildingFinished');
-
+  LazarusIDE.ToolStatus := itNone;
+  Logs('TMyIDEIntf.onProjectBuildingFinished: ' + BoolToStr(BuildSuccessful, True));
+  try
+    if BuildSuccessful and FWithoutDebug then
+    begin
+      LTargetFile := Self.TargetFile;
+      if FileExists(LTargetFile) then
+      begin
+        LTargetCmd := '$TargetCmdLine()';
+        if IDEMacros.SubstituteMacros(LTargetCmd) then
+        begin
+          Logs('onProjectBuildingFinished run: ' + LTargetCmd);
+          Lang.ExecuteCommand(LTargetCmd, False, True, ExtractFileDir(LTargetFile));
+        end;
+      end;
+    end;
+  finally
+    FWithoutDebug := False;
+  end;
 end;
 
 function TMyIDEIntf.onProjectDependenciesCompiling(Sender: TObject): TModalResult;
@@ -484,6 +563,7 @@ end;
 function TMyIDEIntf.onRunWithoutDebugBuilding(Sender: TObject;
   var Handled: boolean): TModalResult;
 begin
+  FWithoutDebug := True;
   Logs('TMyIDEIntf.onRunWithoutDebugBuilding');
   Result := FModalResult;
 end;
@@ -497,6 +577,12 @@ end;
 procedure TMyIDEIntf.onRunFinished(Sender: TObject);
 begin
   Logs('TMyIDEIntf.onRunFinished');
+end;
+
+procedure TMyIDEIntf.onChangeToolStatus(Sender: TObject; OldStatus,
+  NewStatus: TLazToolStatus);
+begin
+  Logs('TMyIDEIntf.onChangeToolStatus: OldStatus=%d, NewStatus=%d', [Ord(OldStatus), Ord(NewStatus)]);
 end;
 
 class procedure TMyIDEIntf.AddHandlers;
@@ -535,16 +621,20 @@ begin
 
 
       // 编译
-      //LazarusIDE.AddHandlerOnProjectBuilding(@onProjectBuilding, FAddToLast);
-      //LazarusIDE.AddHandlerOnProjectBuildingFinished(@onProjectBuildingFinished, FAddToLast);
-      //LazarusIDE.AddHandlerOnProjectDependenciesCompiling(@onProjectDependenciesCompiling, FAddToLast);
-      //LazarusIDE.AddHandlerOnProjectDependenciesCompiled(@onProjectDependenciesCompiled, FAddToLast);
-      //LazarusIDE.AddHandlerOnLazarusBuilding(@onLazarusBuilding, FAddToLast);
-      //LazarusIDE.AddHandlerOnLazarusBuildingFinished(@onLazarusBuildingFinished, FAddToLast);
-      //LazarusIDE.AddHandlerOnRunDebug(@onRunDebug, FAddToLast);
-      //LazarusIDE.AddHandlerOnRunWithoutDebugBuilding(@onRunWithoutDebugBuilding, FAddToLast);
-      //LazarusIDE.AddHandlerOnRunWithoutDebugInit(@onRunWithoutDebugInit, FAddToLast);
-      //LazarusIDE.AddHandlerOnRunFinished(@onRunFinished, FAddToLast);
+      if OutLang = olGo then
+      begin
+        LazarusIDE.AddHandlerOnChangeToolStatus(@onChangeToolStatus, FAddToLast);
+        LazarusIDE.AddHandlerOnProjectBuilding(@onProjectBuilding, FAddToLast);
+        LazarusIDE.AddHandlerOnProjectBuildingFinished(@onProjectBuildingFinished, FAddToLast);
+        LazarusIDE.AddHandlerOnProjectDependenciesCompiling(@onProjectDependenciesCompiling, FAddToLast);
+        LazarusIDE.AddHandlerOnProjectDependenciesCompiled(@onProjectDependenciesCompiled, FAddToLast);
+        LazarusIDE.AddHandlerOnLazarusBuilding(@onLazarusBuilding, FAddToLast);
+        LazarusIDE.AddHandlerOnLazarusBuildingFinished(@onLazarusBuildingFinished, FAddToLast);
+        LazarusIDE.AddHandlerOnRunDebug(@onRunDebug, FAddToLast);
+        LazarusIDE.AddHandlerOnRunWithoutDebugBuilding(@onRunWithoutDebugBuilding, FAddToLast);
+        LazarusIDE.AddHandlerOnRunWithoutDebugInit(@onRunWithoutDebugInit, FAddToLast);
+        LazarusIDE.AddHandlerOnRunFinished(@onRunFinished, FAddToLast);
+      end;
     end;
   end;
 end;
