@@ -59,12 +59,14 @@ type
   TLangBase = class
   private
     FPackageName: string;
+
     function GetProjectLPRFileName: string;
     function GetWindResFileName: string;
   protected
     FTypeLists: TTypeLists;
     FBaseTypes: TTypeLists;
 
+    function GetPackageName: string; virtual;
     procedure InitTypeLists; virtual; abstract;
     procedure InitBaseTypes; virtual; abstract;
     function GetParams(AProp: PPropInfo): TFnParams;
@@ -81,7 +83,7 @@ type
     procedure ExecuteCommand(const ACmds: array of string; AWait: Boolean; AShow: Boolean = False; AWorkDir: string = ''); overload;
     procedure ExecuteCommand(const ACmd: string; AWait: Boolean; AShow: Boolean = False; AWorkDir: string = ''); overload;
 
-    property PackageName: string read FPackageName write FPackageName;
+    property PackageName: string read GetPackageName write FPackageName;
     property ProjectLPRFileName: string read GetProjectLPRFileName;
     property WindResFileName: string read GetWindResFileName;
     property ResFileExists: Boolean read GetResFileExists;
@@ -128,6 +130,11 @@ end;
 function TLangBase.GetProjectLPRFileName: string;
 begin
   Result := ChangeFileExt(LazarusIDE.ActiveProject.ProjectInfoFile, '.lpr');
+end;
+
+function TLangBase.GetPackageName: string;
+begin
+  Result := FPackageName;
 end;
 
 function TLangBase.GetResFileExists: Boolean;

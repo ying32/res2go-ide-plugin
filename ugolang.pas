@@ -46,6 +46,7 @@ type
     procedure InitTypeLists; override;
     procedure InitBaseTypes; override;
     function GetResFileExists: Boolean; override;
+    function GetPackageName: string; override;
   public
     constructor Create;
     function Complie(AParams: TComplieParam): Boolean; override;
@@ -1032,6 +1033,13 @@ end;
 function TGoLang.GetResFileExists: Boolean;
 begin
   Result:= FileExists('') or FileExists('');
+end;
+
+function TGoLang.GetPackageName: string;
+begin
+  Result:=inherited GetPackageName;
+  if Result = '' then
+    Result := 'main';
 end;
 
 function TGoLang.ParamTypeCov(ASrc: string): string;
