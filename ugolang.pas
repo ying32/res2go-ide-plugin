@@ -78,6 +78,7 @@ var
   LCmd, LCmd2, LNoCmdWindow: string;
   LTool: TIDEExternalToolOptions;
   LOpts: TLazCompilerOptions;
+  LARCH, LOS: string;
 begin
   Result := False;
   if not Assigned(RunExternalTool) then
@@ -101,13 +102,32 @@ begin
     LTool.WorkingDirectory := AParams.Input;
     LTool.CmdLineParams := LCmd;
     //Application.GetEnvironmentList(LTool.EnvironmentOverrides);
-    //LTool.EnvironmentOverrides.Values[''] ;
 
-    //LOpts.TargetCPU:=;
-    // GOARCH=
+    // 为空则为默认
+    LOS := '';
+    LARCH := '';
 
-    //LOpts.TargetOS:=;
     // GOOS
+    if SameText(LOpts.TargetOS, 'Darwin') or SameText(LOpts.TargetOS, 'MacOS') then
+      LOS := 'darwin'
+    else if SameText(LOpts.TargetOS, 'Win32') or SameText(LOpts.TargetOS, 'Win64') then
+      LOS := 'windows'
+    else if SameTExt(LOpts.TargetOS, 'Linux') then
+      LOS := 'linux';
+
+    // GOARCh
+    if SameText(LOpts.TargetCPU, 'arm') then
+      LARCH := 'arm'
+    else if SameText(LOpts.TargetCPU, 'i386') then
+      LARCH := '386'
+    else if SameText(LOpts.TargetCPU, 'x86_64') then
+      LARCH := 'amd64';
+
+
+    if LOS <> '' then
+      LTool.EnvironmentOverrides.Values['GOOS'] := LOS;
+    if LARCH <> '' then
+      LTool.EnvironmentOverrides.Values['GOARCH'] := LARCH;
 
 
     LTool.Parsers.Add(SubToolFPC);

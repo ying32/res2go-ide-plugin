@@ -9,6 +9,7 @@
 * 5、工程选项中`Compiler Options -> Config and Target -> Win32 gui application (-WG)`可控制去除命令行窗口。
 * 6、`Project -> Run Parameters -> Command line parameters`可控制运行时传入的命令行。
 * 7、工程选项中`Compiler Options -> Paths -> Target file name(-o)`可控制生成的可执行文件名。
+* 8、工程选项中`Compiler Options -> Config and Target -> Target platform`可以控制`GOOS`(Target OS)和`GOARCH`(Target CPU family)变量。
 
 #### v1.0.6
 
