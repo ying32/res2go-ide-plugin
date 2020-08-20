@@ -84,7 +84,7 @@ type
 
 
     function GetProjectPath: string;
-    function IsMainPackage: Boolean;
+
     procedure SetEnabledCovert(AValue: Boolean);
     procedure SetPackageName(AValue: string);
   public
@@ -304,7 +304,7 @@ end;
 function TMyIDEIntf.GetRealOutputPackagePath: string;
 begin
   Result := Self.RealOutputPath;
-  if not IsMainPackage then
+  if not Lang.IsMainPackage then
     Result := AppendPathDelim(Result + PackageName);
 end;
 
@@ -368,7 +368,7 @@ begin
   LOutPath := Self.RealOutputPath;
   if not SysUtils.DirectoryExists(LOutPath) then
     SysUtils.CreateDir(LOutPath);
-  if not IsMainPackage then
+  if not Lang.IsMainPackage then
   begin
     LOutPath := AppendPathDelim(LOutPath) + PackageName;
     if not SysUtils.DirectoryExists(LOutPath) then
@@ -376,19 +376,12 @@ begin
   end;
 end;
 
-
-
 function TMyIDEIntf.GetProjectPath: string;
 begin
   Result := '';
   if Assigned(LazarusIDE.ActiveProject) then
     Result := AppendPathDelim(LazarusIDE.ActiveProject.Directory);
    // Result := ExtractFilePath(LazarusIDE.ActiveProject.ProjectInfoFile);
-end;
-
-function TMyIDEIntf.IsMainPackage: Boolean;
-begin
-  Result := PackageName.IsEmpty or PackageName.Equals('main');
 end;
 
 procedure TMyIDEIntf.SetEnabledCovert(AValue: Boolean);
@@ -457,8 +450,8 @@ end;
 
 function TMyIDEIntf.onProjectOpened(Sender: TObject; AProject: TLazProject): TModalResult;
 begin
-  Logs('ExtensionToLazSyntaxHighlighter=%d', [Integer(IDEEditorOptions.ExtensionToLazSyntaxHighlighter('.go'))]);
-  Logs('ExtensionToLazSyntaxHighlighter=%d', [Integer(IDEEditorOptions.ExtensionToLazSyntaxHighlighter('go'))]);
+  //Logs('ExtensionToLazSyntaxHighlighter=%d', [Integer(IDEEditorOptions.ExtensionToLazSyntaxHighlighter('.go'))]);
+  //Logs('ExtensionToLazSyntaxHighlighter=%d', [Integer(IDEEditorOptions.ExtensionToLazSyntaxHighlighter('go'))]);
   //Logs('GetCompilerFilename=%s', [LazarusIDE.GetCompilerFilename]);
   //Logs('GetFPCompilerFilename=%s', [LazarusIDE.GetFPCompilerFilename]);
   //Logs('ActiveProject.Directory=%s', [LazarusIDE.ActiveProject.Directory]);
@@ -467,18 +460,19 @@ end;
 
 function TMyIDEIntf.onProjectBuilding(Sender: TObject): TModalResult;
 
-  function GetCompileReasons: TCompileReasons;
-  begin
-    Result := [];
-    try
-      PByte(@Result)^ := Byte(GetOrdProp(LazarusIDE.ActiveProject.LazCompilerOptions, 'CompileReasons'));
-    except
-    end;
-  end;
+  //function GetCompileReasons: TCompileReasons;
+  //begin
+  //  Result := [];
+  //  try
+  //    PByte(@Result)^ := Byte(GetOrdProp(LazarusIDE.ActiveProject.LazCompilerOptions, 'CompileReasons'));
+  //  except
+  //  end;
+  //end;
 
 var
   LParams: TCompileParam;
-  LReasons: TCompileReasons;
+  //LReasons: TCompileReasons;
+  LResult: Boolean;
 begin
   //LReasons := GetCompileReasons;
 
@@ -498,7 +492,14 @@ begin
   try
     LParams.Input := TargetDir;
     LParams.Output := TargetFile;
-    onProjectBuildingFinished(Self, Lang.Compile(LParams));
+    LResult := False;
+    try
+      LResult := Lang.Compile(LParams);
+    except
+      on E: Exception do
+        CtlWriteln(mluError, E.Message);
+    end;
+    onProjectBuildingFinished(Self, LResult);
   finally
     LazarusIDE.ToolStatus:=itNone;
   end;
@@ -511,7 +512,7 @@ var
   LTargetFile, LTargetCmd: string;
 begin
   LazarusIDE.ToolStatus := itNone;
-  Logs('TMyIDEIntf.onProjectBuildingFinished: ' + BoolToStr(BuildSuccessful, True));
+  //Logs('TMyIDEIntf.onProjectBuildingFinished: ' + BoolToStr(BuildSuccessful, True));
   try
     if BuildSuccessful and FWithoutDebug then
     begin
@@ -521,8 +522,9 @@ begin
         LTargetCmd := '$TargetCmdLine()';
         if IDEMacros.SubstituteMacros(LTargetCmd) then
         begin
-          Logs('onProjectBuildingFinished run: ' + LTargetCmd);
+          //Logs('onProjectBuildingFinished run: ' + LTargetCmd);
           Lang.ExecuteCommand(LTargetCmd, False, True, ExtractFileDir(LTargetFile));
+          onRunFinished(Self);
         end;
       end;
     end;

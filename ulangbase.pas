@@ -73,8 +73,6 @@ type
     function FirstCaseChar(Astr: string): string;
     function GetVaildForms: TVaildForms;
     function GetResFileExists: Boolean; virtual;
-
-    function IsMainPackage: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -82,6 +80,7 @@ type
 
     procedure ExecuteCommand(const ACmds: array of string; AWait: Boolean; AShow: Boolean = False; AWorkDir: string = ''); overload;
     procedure ExecuteCommand(const ACmd: string; AWait: Boolean; AShow: Boolean = False; AWorkDir: string = ''); overload;
+    function IsMainPackage: Boolean;
 
     property PackageName: string read GetPackageName write FPackageName;
     property ProjectLPRFileName: string read GetProjectLPRFileName;

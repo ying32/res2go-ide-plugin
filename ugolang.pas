@@ -588,7 +588,6 @@ begin
     Add(')');
     Add('');
     Add('func main() {');
-    Add('');
 
     // scaled
     if AParam.UseScaled then
