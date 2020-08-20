@@ -477,7 +477,7 @@ function TMyIDEIntf.onProjectBuilding(Sender: TObject): TModalResult;
   end;
 
 var
-  LParams: TComplieParam;
+  LParams: TCompileParam;
   LReasons: TCompileReasons;
 begin
   //LReasons := GetCompileReasons;
@@ -498,7 +498,7 @@ begin
   try
     LParams.Input := TargetDir;
     LParams.Output := TargetFile;
-    onProjectBuildingFinished(Self, Lang.Complie(LParams));
+    onProjectBuildingFinished(Self, Lang.Compile(LParams));
   finally
     LazarusIDE.ToolStatus:=itNone;
   end;

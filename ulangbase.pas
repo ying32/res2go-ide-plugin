@@ -40,7 +40,7 @@ type
 
   TVaildForms = array of string;
 
-  TComplieParam = record
+  TCompileParam = record
     Input: string;
     Output: string;
   end;
@@ -78,7 +78,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function Complie(AParams: TComplieParam): Boolean; virtual; abstract;
+    function Compile(AParams: TCompileParam): Boolean; virtual; abstract;
 
     procedure ExecuteCommand(const ACmds: array of string; AWait: Boolean; AShow: Boolean = False; AWorkDir: string = ''); overload;
     procedure ExecuteCommand(const ACmd: string; AWait: Boolean; AShow: Boolean = False; AWorkDir: string = ''); overload;

@@ -49,7 +49,7 @@ type
     function GetPackageName: string; override;
   public
     constructor Create;
-    function Complie(AParams: TComplieParam): Boolean; override;
+    function Compile(AParams: TCompileParam): Boolean; override;
 
     procedure ConvertProjectFile(AParam: TProjParam); override;
     function ToEventString(AProp: PPropInfo): string; override;
@@ -73,7 +73,7 @@ begin
   inherited Create;
 end;
 
-function TGoLang.Complie(AParams: TComplieParam): Boolean;
+function TGoLang.Compile(AParams: TCompileParam): Boolean;
 var
   LCmd, LCmd2, LNoCmdWindow: string;
   LTool: TIDEExternalToolOptions;
