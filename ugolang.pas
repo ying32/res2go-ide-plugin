@@ -77,14 +77,16 @@ function TGoLang.Complie(AParams: TComplieParam): Boolean;
 var
   LCmd, LCmd2, LNoCmdWindow: string;
   LTool: TIDEExternalToolOptions;
+  LOpts: TLazCompilerOptions;
 begin
   Result := False;
   if not Assigned(RunExternalTool) then
     Exit;
 
   LNoCmdWindow := '';
+  LOpts :=LazarusIDE.ActiveProject.LazCompilerOptions;
 {$ifdef windows}
-  if LazarusIDE.ActiveProject.LazCompilerOptions.Win32GraphicApp then
+  if LOpts.Win32GraphicApp then
     LNoCmdWindow := ' -ldflags="-H windowsgui"';
 {$endif}
 
@@ -99,6 +101,15 @@ begin
     LTool.WorkingDirectory := AParams.Input;
     LTool.CmdLineParams := LCmd;
     //Application.GetEnvironmentList(LTool.EnvironmentOverrides);
+    //LTool.EnvironmentOverrides.Values[''] ;
+
+    //LOpts.TargetCPU:=;
+    // GOARCH=
+
+    //LOpts.TargetOS:=;
+    // GOOS
+
+
     LTool.Parsers.Add(SubToolFPC);
     LTool.Parsers.Add(SubToolDefault);
     LTool.ShowConsole := True;
@@ -803,7 +814,7 @@ begin
   end;
 
   // 独立检查的
-  if (AUIPackageName <> '') and (Length(LImports) > 0) then
+  if (AUIPackageName <> '') and (AUIPackageName <> 'main') and (Length(LImports) > 0) then
   begin
     I := IndexUIPkgNameOf;
     if I = -1 then

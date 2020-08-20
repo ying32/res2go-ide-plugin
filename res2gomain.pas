@@ -269,7 +269,8 @@ end;
 function TMyIDEIntf.GetTargetFile: string;
 begin
   Result := '$TargetFile()';
-  IDEMacros.SubstituteMacros(Result);
+  if not IDEMacros.SubstituteMacros(Result) then
+    Result := LazarusIDE.ActiveProject.LazCompilerOptions.TargetFilename;
 end;
 
 function TMyIDEIntf.GetUseScaled: Boolean;
@@ -411,7 +412,7 @@ constructor TMyIDEIntf.Create;
 begin
   inherited Create;
   FAddToLast := False;   // 测试时用，方便修改，最终要改为 False
-  FModalResult := mrCancel;//mrOK; // 测试时用，方便修改，最终要改为 mrAbort
+  FModalResult := mrAbort;//mrOK; // 测试时用，方便修改，最终要改为 mrAbort
 end;
 
 destructor TMyIDEIntf.Destroy;
