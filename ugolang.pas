@@ -598,7 +598,7 @@ begin
       Add('    vcl.Application.SetTitle("%s")', [AParam.Title]);
 
     Add('    vcl.Application.Initialize()');
-    //Add('    vcl.Application.SetMainFormOnTaskBar(true)');
+    Add('    vcl.Application.SetMainFormOnTaskBar(true)');
 
     // forms
     LForms := Self.GetVaildForms;
