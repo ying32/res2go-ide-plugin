@@ -29,7 +29,9 @@ resourceString
   rsPackageName = 'Package Name:';
   rsUseDefaultWinAppRes = 'Use Default winappres';
   rsGoUseTempdll = 'Use "tempdll"';
-  rschkGoEnabledFinalizerOn = 'Enabled "finalizerOn"';
+  rsGoUseTempdllHint = 'Package liblcl into an executable file (macOS is not supported)';
+  rsGoEnabledFinalizerOn = 'Enabled "finalizerOn"';
+  rsGoEnabledFinalizerOnHint = 'After opening the non-component class can not call the "Free" method';
   rsGoTags = 'Tags:';
   rsDividerBevel1 = 'For Golang';
 

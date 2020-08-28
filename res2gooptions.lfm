@@ -141,6 +141,8 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Top = 30
       Width = 102
       Caption = 'Use "tempdll"'
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 0
     end
     object chkGoEnabledFinalizerOn: TCheckBox
@@ -149,6 +151,8 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Top = 30
       Width = 145
       Caption = 'Enabled "finalizerOn"'
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 1
     end
     object lblGoTags: TLabeledEdit

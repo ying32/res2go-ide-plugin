@@ -264,7 +264,9 @@ begin
   chkUseDefaultWinAppRes.Caption:=rsUseDefaultWinAppRes;
 
   chkGoUseTempdll.Caption := rsGoUseTempdll;
-  chkGoEnabledFinalizerOn.Caption := rschkGoEnabledFinalizerOn;
+  chkGoUseTempdll.Hint:=rsGoUseTempdllHint;
+  chkGoEnabledFinalizerOn.Caption := rsGoEnabledFinalizerOn;
+  chkGoEnabledFinalizerOn.Hint:=rsGoEnabledFinalizerOnHint;
   lblGoTags.EditLabel.Caption := rsGoTags;
   DividerBevel1.Caption := rsDividerBevel1;
 
