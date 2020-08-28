@@ -1,103 +1,167 @@
 object Res2goOptionsFrame: TRes2goOptionsFrame
   Left = 0
-  Height = 247
+  Height = 444
   Top = 0
-  Width = 510
-  ClientHeight = 247
-  ClientWidth = 510
+  Width = 658
+  ClientHeight = 444
+  ClientWidth = 658
   OnClick = FrameClick
   TabOrder = 0
-  DesignLeft = 1186
-  DesignTop = 435
-  object chkEanbledConvert: TCheckBox
-    Left = 16
-    Height = 21
-    Top = 23
-    Width = 120
-    AutoSize = False
-    Caption = 'Enabled Convert'
+  DesignLeft = 686
+  DesignTop = 362
+  object Panel1: TPanel
+    Left = 0
+    Height = 216
+    Top = 0
+    Width = 658
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 216
+    ClientWidth = 658
     TabOrder = 0
+    object chkEanbledConvert: TCheckBox
+      Left = 16
+      Height = 21
+      Top = 23
+      Width = 120
+      AutoSize = False
+      Caption = 'Enabled Convert'
+      TabOrder = 0
+    end
+    object lblOutputPath: TLabeledEdit
+      Left = 88
+      Height = 25
+      Top = 96
+      Width = 400
+      EditLabel.Height = 17
+      EditLabel.Width = 72
+      EditLabel.Caption = 'Output Path:'
+      EditLabel.ParentColor = False
+      LabelPosition = lpLeft
+      TabOrder = 1
+    end
+    object Label1: TLabel
+      Left = 88
+      Height = 17
+      Top = 133
+      Width = 60
+      Caption = 'eg:  code/'
+      ParentColor = False
+    end
+    object chkUseOriginalFileName: TCheckBox
+      Left = 164
+      Height = 21
+      Top = 23
+      Width = 163
+      AutoSize = False
+      Caption = 'Use Original File Name'
+      TabOrder = 2
+    end
+    object chkSaveGfmFile: TCheckBox
+      Left = 358
+      Height = 21
+      Top = 23
+      Width = 99
+      Caption = 'Save gfm File'
+      TabOrder = 3
+    end
+    object lblOutLang: TLabel
+      Left = 9
+      Height = 17
+      Top = 170
+      Width = 75
+      Caption = 'Output Lang:'
+      ParentColor = False
+    end
+    object cbbLangs: TComboBox
+      Left = 88
+      Height = 25
+      Top = 166
+      Width = 132
+      ItemHeight = 17
+      ItemIndex = 0
+      Items.Strings = (
+        'Go'
+        'Nim'
+        'Rust'
+      )
+      Style = csDropDownList
+      TabOrder = 4
+      Text = 'Go'
+    end
+    object lblPkgName: TLabeledEdit
+      Left = 344
+      Height = 25
+      Top = 166
+      Width = 144
+      EditLabel.Height = 17
+      EditLabel.Width = 100
+      EditLabel.Caption = 'Package Name：'
+      EditLabel.ParentColor = False
+      LabelPosition = lpLeft
+      TabOrder = 5
+      Text = 'main'
+    end
+    object chkUseDefaultWinAppRes: TCheckBox
+      Left = 16
+      Height = 21
+      Top = 56
+      Width = 152
+      Caption = 'Use default winappres'
+      TabOrder = 6
+    end
   end
-  object lblOutputPath: TLabeledEdit
-    Left = 88
-    Height = 25
-    Top = 96
-    Width = 400
-    EditLabel.Height = 17
-    EditLabel.Width = 72
-    EditLabel.Caption = 'Output Path:'
-    EditLabel.ParentColor = False
-    LabelPosition = lpLeft
+  object Panel2: TPanel
+    Left = 0
+    Height = 104
+    Top = 216
+    Width = 658
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 104
+    ClientWidth = 658
     TabOrder = 1
-  end
-  object Label1: TLabel
-    Left = 88
-    Height = 17
-    Top = 133
-    Width = 60
-    Caption = 'eg:  code/'
-    ParentColor = False
-  end
-  object chkUseOriginalFileName: TCheckBox
-    Left = 164
-    Height = 21
-    Top = 23
-    Width = 163
-    AutoSize = False
-    Caption = 'Use Original File Name'
-    TabOrder = 2
-  end
-  object chkSaveGfmFile: TCheckBox
-    Left = 358
-    Height = 21
-    Top = 23
-    Width = 99
-    Caption = 'Save gfm File'
-    TabOrder = 3
-  end
-  object lblOutLang: TLabel
-    Left = 9
-    Height = 17
-    Top = 170
-    Width = 75
-    Caption = 'Output Lang:'
-    ParentColor = False
-  end
-  object cbbLangs: TComboBox
-    Left = 88
-    Height = 25
-    Top = 166
-    Width = 132
-    ItemHeight = 17
-    ItemIndex = 0
-    Items.Strings = (
-      'Go'
-      'Nim'
-      'Rust'
-    )
-    Style = csDropDownList
-    TabOrder = 4
-    Text = 'Go'
-  end
-  object lblPkgName: TLabeledEdit
-    Left = 344
-    Height = 25
-    Top = 166
-    Width = 144
-    EditLabel.Height = 17
-    EditLabel.Width = 100
-    EditLabel.Caption = 'Package Name：'
-    EditLabel.ParentColor = False
-    LabelPosition = lpLeft
-    TabOrder = 5
-    Text = 'main'
-  end
-  object chkUseDefaultWinAppRes: TCheckBox
-    Left = 16
-    Height = 21
-    Top = 56
-    Width = 152
-    Caption = 'Use default winappres'
-    TabOrder = 6
+    object DividerBevel1: TDividerBevel
+      Left = 2
+      Height = 17
+      Top = 0
+      Width = 654
+      Caption = 'For Golang'
+      Align = alTop
+      AutoSize = False
+      BorderSpacing.Left = 2
+      BorderSpacing.Right = 2
+      Font.Style = [fsBold]
+      ParentFont = False
+      Style = gsHorLines
+    end
+    object chkGoUseTempdll: TCheckBox
+      Left = 16
+      Height = 21
+      Top = 30
+      Width = 102
+      Caption = 'Use "tempdll"'
+      TabOrder = 0
+    end
+    object chkGoEnabledFinalizerOn: TCheckBox
+      Left = 164
+      Height = 21
+      Top = 30
+      Width = 145
+      Caption = 'Enabled "finalizerOn"'
+      TabOrder = 1
+    end
+    object lblGoTags: TLabeledEdit
+      Left = 88
+      Height = 25
+      Top = 64
+      Width = 400
+      EditLabel.Height = 17
+      EditLabel.Width = 31
+      EditLabel.Caption = 'Tags:'
+      EditLabel.ParentColor = False
+      LabelPosition = lpLeft
+      TabOrder = 2
+    end
   end
 end

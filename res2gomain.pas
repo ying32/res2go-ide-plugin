@@ -52,6 +52,9 @@ type
     FEvents: array of TEventItem;
 
     FEnabledConvert: Boolean;
+    FGoEnabledFinalizerOn: Boolean;
+    FGoTags: string;
+    FGoUseTempdll: Boolean;
     FOutLang: TOutLang;
     FOutputPath: string;
     FPackageName: string;
@@ -120,6 +123,10 @@ type
     property UseScaled: Boolean read GetUseScaled;
     property ProjectTitle: string read GetProjectTitle;
     property UseDefaultWinAppRes: Boolean read FUseDefaultWinAppRes write FUseDefaultWinAppRes;
+    property GoUseTempdll: Boolean read FGoUseTempdll write FGoUseTempdll;
+    property GoEnabledFinalizerOn: Boolean read FGoEnabledFinalizerOn write FGoEnabledFinalizerOn;
+    property GoTags: string read FGoTags write FGoTags;
+
 
     property DefaultProjectParam: TProjParam read GetDefaultProjectParam;
 
@@ -492,6 +499,13 @@ begin
   try
     LParams.Input := TargetDir;
     LParams.Output := TargetFile;
+    // for golang
+    if OutLang = olGo then
+    begin
+      LParams.GoUseTempdll:= Self.GoUseTempdll;
+      LParams.GoEnabledFinalizerOn:= Self.GoEnabledFinalizerOn;
+      LParams.GoTags:=Self.GoTags;
+    end;
     LResult := False;
     try
       LResult := Lang.Compile(LParams);

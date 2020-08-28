@@ -19,7 +19,7 @@ uses
   ProjectIntf,
   ProjectResourcesIntf,
   res2goresources,
-  Laz2_XMLCfg,
+  Laz2_XMLCfg, DividerBevel,
   uSupports;
 
 type
@@ -30,6 +30,9 @@ type
   TProjectRes2goRes = class(TAbstractProjectResource)
   private
     FEnabled: Boolean;
+    FGoEnabledFinalizerOn: Boolean;
+    FGoTags: string;
+    FGoUseTempdll: Boolean;
     FOutLang: TOutLang;
     FOutputPath: string;
     FPakcageName: string;
@@ -38,6 +41,9 @@ type
     FUseOriginalFileName: Boolean;
 
     procedure SetEnabled(AValue: Boolean);
+    procedure SetGoEnabledFinalizerOn(AValue: Boolean);
+    procedure SetGoTags(AValue: string);
+    procedure SetGoUseTempdll(AValue: Boolean);
     procedure SetOutLang(AValue: TOutLang);
     procedure SetOutputPath(AValue: string);
     procedure SetPackageName(AValue: string);
@@ -57,20 +63,29 @@ type
     property OutLang: TOutLang read FOutLang write SetOutLang;
     property PackageName: string read FPakcageName write SetPackageName;
     property UseDefaultWinAppRes: Boolean read FUseDefaultWinAppRes write SetUseDefaultWinAppRes;
+    property GoUseTempdll: Boolean read FGoUseTempdll write SetGoUseTempdll;
+    property GoEnabledFinalizerOn: Boolean read FGoEnabledFinalizerOn write SetGoEnabledFinalizerOn;
+    property GoTags: string read FGoTags write SetGoTags;
   end;
 
   { TRes2goOptionsFrame }
 
   TRes2goOptionsFrame = class(TAbstractIDEOptionsEditor)
-    chkUseDefaultWinAppRes: TCheckBox;
-    chkSaveGfmFile: TCheckBox;
-    chkEanbledConvert: TCheckBox;
-    chkUseOriginalFileName: TCheckBox;
     cbbLangs: TComboBox;
+    chkGoUseTempdll: TCheckBox;
+    chkGoEnabledFinalizerOn: TCheckBox;
+    chkEanbledConvert: TCheckBox;
+    chkSaveGfmFile: TCheckBox;
+    chkUseDefaultWinAppRes: TCheckBox;
+    chkUseOriginalFileName: TCheckBox;
+    DividerBevel1: TDividerBevel;
     Label1: TLabel;
     lblOutLang: TLabel;
     lblOutputPath: TLabeledEdit;
+    lblGoTags: TLabeledEdit;
     lblPkgName: TLabeledEdit;
+    Panel1: TPanel;
+    Panel2: TPanel;
     procedure FrameClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -100,6 +115,27 @@ procedure TProjectRes2goRes.SetEnabled(AValue: Boolean);
 begin
   if FEnabled=AValue then Exit;
   FEnabled:=AValue;
+  Self.Modified:=True;
+end;
+
+procedure TProjectRes2goRes.SetGoEnabledFinalizerOn(AValue: Boolean);
+begin
+  if FGoEnabledFinalizerOn=AValue then Exit;
+  FGoEnabledFinalizerOn:=AValue;
+  Self.Modified:=True;
+end;
+
+procedure TProjectRes2goRes.SetGoTags(AValue: string);
+begin
+  if FGoTags=AValue then Exit;
+  FGoTags:=AValue;
+  Self.Modified:=True;
+end;
+
+procedure TProjectRes2goRes.SetGoUseTempdll(AValue: Boolean);
+begin
+  if FGoUseTempdll=AValue then Exit;
+  FGoUseTempdll:=AValue;
   Self.Modified:=True;
 end;
 
@@ -165,6 +201,9 @@ begin
     SetDeleteValue(Path+'Res2go/OutLang/Value', Integer(OutLang), 0);
     SetDeleteValue(Path+'Res2go/PackageName/Value', PackageName, 'main');
     SetDeleteValue(Path+'Res2go/UseDefaultWinAppRes/Value', UseDefaultWinAppRes, False);
+    SetDeleteValue(Path+'Res2go/GoUseTempdll/Value', GoUseTempdll, False);
+    SetDeleteValue(Path+'Res2go/GoEnabledFinalizerOn/Value', GoEnabledFinalizerOn, False);
+    SetDeleteValue(Path+'Res2go/GoTags/Value', GoTags, '');
   end;
 end;
 
@@ -180,6 +219,10 @@ begin
     OutLang := TOutLang(GetValue(Path+'Res2go/SaveGfmFile/Value', 0));
     PackageName := GetValue(Path+'Res2go/PackageName/Value', 'main');
     UseDefaultWinAppRes := GetValue(Path+'Res2go/UseDefaultWinAppRes/Value', False);
+
+    GoUseTempdll := GetValue(Path+'Res2go/GoUseTempdll/Value', False);
+    GoEnabledFinalizerOn := GetValue(Path+'Res2go/GoEnabledFinalizerOn/Value', False);
+    GoTags := GetValue(Path+'Res2go/GoTags/Value', '');
   end;
 
   if Assigned(MyIDEIntf) then
@@ -191,6 +234,10 @@ begin
     MyIDEIntf.OutLang:=OutLang;
     MyIDEIntf.PackageName:=PackageName;
     MyIDEIntf.UseDefaultWinAppRes := UseDefaultWinAppRes;
+
+    MyIDEIntf.GoUseTempdll:=GoUseTempdll;
+    MyIDEIntf.GoEnabledFinalizerOn:=GoEnabledFinalizerOn;
+    MyIDEIntf.GoTags := GoTags;
   end;
 end;
 
@@ -215,6 +262,12 @@ begin
   lblOutLang.Caption:=rsOutputLang;
   lblPkgName.EditLabel.Caption:=rsPackageName;
   chkUseDefaultWinAppRes.Caption:=rsUseDefaultWinAppRes;
+
+  chkGoUseTempdll.Caption := rsGoUseTempdll;
+  chkGoEnabledFinalizerOn.Caption := rschkGoEnabledFinalizerOn;
+  lblGoTags.EditLabel.Caption := rsGoTags;
+  DividerBevel1.Caption := rsDividerBevel1;
+
 end;
 
 destructor TRes2goOptionsFrame.Destroy;
@@ -251,6 +304,10 @@ begin
       MyIDEIntf.OutLang := LRes.OutLang;
       MyIDEIntf.PackageName:=LRes.PackageName;
       MyIDEIntf.UseDefaultWinAppRes := LRes.UseDefaultWinAppRes;
+      MyIDEIntf.GoUseTempdll:=LRes.GoUseTempdll;
+      MyIDEIntf.GoEnabledFinalizerOn:=LRes.GoEnabledFinalizerOn;
+      MyIDEIntf.GoTags := LRes.GoTags;
+
 
       chkEanbledConvert.Checked := MyIDEIntf.EnabledConvert;
       lblOutputPath.Text := MyIDEIntf.OutputPath;
@@ -259,6 +316,9 @@ begin
       cbbLangs.ItemIndex:=Integer(MyIDEIntf.OutLang);
       lblPkgName.Text:=MyIDEIntf.PackageName;
       chkUseDefaultWinAppRes.Checked:=MyIDEIntf.UseDefaultWinAppRes;
+      chkGoUseTempdll.Checked:=LRes.GoUseTempdll;
+      chkGoEnabledFinalizerOn.Checked:=LRes.GoEnabledFinalizerOn;
+      lblGoTags.Text := LRes.GoTags;
     end;
   end;
 end;
@@ -282,6 +342,11 @@ begin
         MyIDEIntf.ReConvertRes:= True;
       MyIDEIntf.UseDefaultWinAppRes := chkUseDefaultWinAppRes.Checked;
 
+      MyIDEIntf.GoUseTempdll := chkGoUseTempdll.Checked;
+      MyIDEIntf.GoEnabledFinalizerOn := chkGoEnabledFinalizerOn.Checked;
+      MyIDEIntf.GoTags := lblGoTags.Text;
+
+
       LRes.OutputPath := MyIDEIntf.OutputPath;
       LRes.Enabled := MyIDEIntf.EnabledConvert;
       LRes.UseOriginalFileName := MyIDEIntf.UseOriginalFileName;
@@ -289,6 +354,10 @@ begin
       LRes.OutLang:=MyIDEIntf.OutLang;
       LRes.PackageName:=MyIDEIntf.PackageName;
       LRes.UseDefaultWinAppRes := MyIDEIntf.UseDefaultWinAppRes;
+
+      LRes.GoUseTempdll:=MyIDEIntf.GoUseTempdll;
+      LRes.GoEnabledFinalizerOn:=MyIDEIntf.GoEnabledFinalizerOn;
+      LRes.GoTags := MyIDEIntf.GoTags;
     end;
   end;
 end;

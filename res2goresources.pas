@@ -28,6 +28,10 @@ resourceString
   rsOutputLang = 'Output Lang:';
   rsPackageName = 'Package Name:';
   rsUseDefaultWinAppRes = 'Use Default winappres';
+  rsGoUseTempdll = 'Use "tempdll"';
+  rschkGoEnabledFinalizerOn = 'Enabled "finalizerOn"';
+  rsGoTags = 'Tags:';
+  rsDividerBevel1 = 'For Golang';
 
 implementation
 

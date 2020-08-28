@@ -1,4 +1,10 @@
-图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420
+图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420  
+
+#### v1.0.8
+
+* 1、增加设`tempdll`约束选项。
+* 2、增加`finalizerOn`约束选项。
+* 2、增加设置`tags`约束选项。
 
 #### v1.0.7
 

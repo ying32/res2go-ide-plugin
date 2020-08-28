@@ -43,6 +43,11 @@ type
   TCompileParam = record
     Input: string;
     Output: string;
+
+    // for Golang
+    GoUseTempdll: Boolean;
+    GoEnabledFinalizerOn: Boolean;
+    GoTags: string;
   end;
 
   { TProjParam }

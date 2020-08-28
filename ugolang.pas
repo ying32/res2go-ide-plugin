@@ -42,6 +42,8 @@ type
 
     procedure AddOrRemoveImports(ALists: TStrings; AAdds, ARemoves: array of string; AUIPackageName: string);
     procedure ProcessMainFunc(ALists: TStrings; ATitle: string; AUseScaled: Boolean; AForms: array of string);
+    function GetOS(ATargetOS: string): string;
+    function GetARCH(ATargetCPU: string): string;
   protected
     procedure InitTypeLists; override;
     procedure InitBaseTypes; override;
@@ -75,23 +77,44 @@ end;
 
 function TGoLang.Compile(AParams: TCompileParam): Boolean;
 var
-  LCmd, LCmd2, LNoCmdWindow: string;
+  LCmd, LCmd2: string;
   LTool: TIDEExternalToolOptions;
   LOpts: TLazCompilerOptions;
   LARCH, LOS: string;
+  LTags: string = '';
+  LNoCmdWindow: string = '';
+  LIsWindows: Boolean = False;
 begin
   Result := False;
   if not Assigned(RunExternalTool) then
     Exit;
-
-  LNoCmdWindow := '';
-  LOpts :=LazarusIDE.ActiveProject.LazCompilerOptions;
 {$ifdef windows}
-  if LOpts.Win32GraphicApp then
-    LNoCmdWindow := ' -ldflags="-H windowsgui"';
+  LIsWindows := True;
 {$endif}
 
-  LCmd := Format('build -i%s -o "%s"', [LNoCmdWindow, AParams.Output]);
+  // compiler options
+  LOpts :=LazarusIDE.ActiveProject.LazCompilerOptions;
+  LOS := GetOS(LOpts.TargetOS);
+  LARCH := GetARCH(LOpts.TargetCPU);
+
+  // windowsgui
+  if LIsWindows and LOpts.Win32GraphicApp then
+    LNoCmdWindow := ' -ldflags="-H windowsgui"';
+
+  // -tags
+  if AParams.GoTags <> '' then
+    LTags := AParams.GoTags;
+  if AParams.GoUseTempdll and (LOS <> 'darwin') and (not LTags.Contains('tempdll')) then
+    LTags := ' tempdll';
+  if AParams.GoEnabledFinalizerOn and (not LTags.Contains('finalizerOn')) then
+    LTags += ' finalizerOn';
+
+  LTags := LTags.Trim;
+  if not LTags.IsEmpty then
+    LTags := ' -tags="' + LTags + '"';
+
+  // command line
+  LCmd := Format('build -i%s%s -o "%s"', [LNoCmdWindow, LTags, AParams.Output]);
   LCmd2 := 'go ' + LCmd;
   Logs('Complie Command: ' + LCmd2);
   LTool := TIDEExternalToolOptions.Create;
@@ -102,27 +125,6 @@ begin
     LTool.WorkingDirectory := AParams.Input;
     LTool.CmdLineParams := LCmd;
     //Application.GetEnvironmentList(LTool.EnvironmentOverrides);
-
-    // 为空则为默认
-    LOS := '';
-    LARCH := '';
-
-    // GOOS
-    if SameText(LOpts.TargetOS, 'Darwin') or SameText(LOpts.TargetOS, 'MacOS') then
-      LOS := 'darwin'
-    else if SameText(LOpts.TargetOS, 'Win32') or SameText(LOpts.TargetOS, 'Win64') then
-      LOS := 'windows'
-    else if SameTExt(LOpts.TargetOS, 'Linux') then
-      LOS := 'linux';
-
-    // GOARCh
-    if SameText(LOpts.TargetCPU, 'arm') then
-      LARCH := 'arm'
-    else if SameText(LOpts.TargetCPU, 'i386') then
-      LARCH := '386'
-    else if SameText(LOpts.TargetCPU, 'x86_64') then
-      LARCH := 'amd64';
-
 
     if LOS <> '' then
       LTool.EnvironmentOverrides.Values['GOOS'] := LOS;
@@ -620,10 +622,10 @@ begin
 end;
 
 function TGoLang.GetPackageImportPath(const AOutPath: string): string;
-var
-  LGoPaths, LPath: string;
-  LPaths: array of string;
-  LP: Integer;
+//var
+//  LGoPaths, LPath: string;
+//  LPaths: array of string;
+//  LP: Integer;
 begin
   Result := '';
   if IsMainPackage then
@@ -1015,6 +1017,30 @@ begin
   for I := High(AForms) downto 0 do
     ALists.Insert(N, Format('    %sApplication.CreateForm(&%s)', [GetPkgName, AForms[I]]));
 
+end;
+
+function TGoLang.GetOS(ATargetOS: string): string;
+begin
+  Result := '';
+  // GOOS
+  if SameText(ATargetOS, 'Darwin') or SameText(ATargetOS, 'MacOS') then
+    Result := 'darwin'
+  else if SameText(ATargetOS, 'Win32') or SameText(ATargetOS, 'Win64') then
+    Result := 'windows'
+  else if SameTExt(ATargetOS, 'Linux') then
+    Result := 'linux';
+end;
+
+function TGoLang.GetARCH(ATargetCPU: string): string;
+begin
+  Result := '';
+  // GOARCh
+  if SameText(ATargetCPU, 'arm') then
+    Result := 'arm'
+  else if SameText(ATargetCPU, 'i386') then
+    Result := '386'
+  else if SameText(ATargetCPU, 'x86_64') then
+    Result := 'amd64';
 end;
 
 
