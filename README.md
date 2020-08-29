@@ -2,8 +2,8 @@
 
 #### v1.0.8
 
-* 1、增加`tempdll`约束选项。
-* 2、增加`finalizerOn`约束选项。
+* 1、增加`tempdll`约束选项，Windows与Linux下开启后可将liblcl打包到可执行文件中。
+* 2、增加`finalizerOn`约束选项，开启后非组件类可不调用`Free`方法。
 * 2、增加设置`tags`约束选项。
 
 #### v1.0.7
