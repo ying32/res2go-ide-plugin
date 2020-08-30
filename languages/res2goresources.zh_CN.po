@@ -25,6 +25,10 @@ msgstr "Golang选项"
 msgid "Enabled Convert"
 msgstr "启用转换"
 
+#: res2goresources.rsgoenabledcgo
+msgid "Enabled CGO"
+msgstr "启用CGO"
+
 #: res2goresources.rsgoenabledfinalizeron
 msgid "Enabled \"finalizerOn\""
 msgstr "启用 \"finalizerOn\"约束"

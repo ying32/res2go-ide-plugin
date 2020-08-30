@@ -82,8 +82,8 @@ var
   LOpts: TLazCompilerOptions;
   LARCH, LOS: string;
   LTags: string = '';
-  LNoCmdWindow: string = '';
   LIsWindows: Boolean = False;
+  LLdFlags: string = '';
 begin
   Result := False;
   if not Assigned(RunExternalTool) then
@@ -97,9 +97,22 @@ begin
   LOS := GetOS(LOpts.TargetOS);
   LARCH := GetARCH(LOpts.TargetCPU);
 
+
+  // -ldflags
+
   // windowsgui
   if LIsWindows and LOpts.Win32GraphicApp then
-    LNoCmdWindow := ' -ldflags="-H windowsgui"';
+    LLdFlags += ' -H windowsgui';
+  // no debug info
+  if not LOpts.GenerateDebugInfo then
+    LLDFlags += ' -w';
+  // strip symbols
+  if LOpts.StripSymbols then
+    LLDFlags += ' -s';
+
+  LLdFlags := LLdFlags.Trim;
+  if not LLdFlags.IsEmpty then
+    LLdFlags := ' -ldflags="' + LLdFlags + '"';
 
   // -tags
   if AParams.GoTags <> '' then
@@ -114,7 +127,7 @@ begin
     LTags := ' -tags="' + LTags + '"';
 
   // command line
-  LCmd := Format('build -i%s%s -o "%s"', [LNoCmdWindow, LTags, AParams.Output]);
+  LCmd := Format('build -i%s%s -o "%s"', [LLdFlags, LTags, AParams.Output]);
   LCmd2 := 'go ' + LCmd;
   Logs('Complie Command: ' + LCmd2);
   LTool := TIDEExternalToolOptions.Create;
@@ -131,6 +144,8 @@ begin
     if LARCH <> '' then
       LTool.EnvironmentOverrides.Values['GOARCH'] := LARCH;
 
+    // cgo
+    LTool.EnvironmentOverrides.Values['CGO_ENABLED'] := IfThen(AParams.GoEnabledCGO, '1', '0');
 
     LTool.Parsers.Add(SubToolFPC);
     LTool.Parsers.Add(SubToolDefault);
@@ -145,11 +160,11 @@ end;
 
 procedure TGoLang.ConvertProjectFile(AParam: TProjParam);
 
-  function GetForms: TVaildForms;
+  function GetForms: TAutoCreateForms;
   var
     I: Integer;
   begin
-    Result := Self.GetVaildForms;
+    Result := Self.GetAutoCreateForms;
     if not Self.IsMainPackage then
     begin
       for I := 0 to High(Result) do
@@ -567,7 +582,7 @@ end;
 
 procedure TGoLang.CreateNewMain(AStrs: TStrings; AParam: TProjParam);
 var
-  LForms: TVaildForms;
+  LForms: TAutoCreateForms;
   LS: string;
 begin
   with AStrs do
@@ -603,7 +618,7 @@ begin
     Add('    vcl.Application.SetMainFormOnTaskBar(true)');
 
     // forms
-    LForms := Self.GetVaildForms;
+    LForms := Self.GetAutoCreateForms;
     for LS in LForms do
     begin
       Add('    vcl.Application.CreateForm(&%s%s)', [GetPrefixPackage, LS]);

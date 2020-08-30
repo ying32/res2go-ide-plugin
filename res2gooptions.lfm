@@ -1,14 +1,14 @@
 object Res2goOptionsFrame: TRes2goOptionsFrame
   Left = 0
-  Height = 444
+  Height = 628
   Top = 0
   Width = 658
-  ClientHeight = 444
+  ClientHeight = 628
   ClientWidth = 658
   OnClick = FrameClick
   TabOrder = 0
-  DesignLeft = 686
-  DesignTop = 362
+  DesignLeft = 867
+  DesignTop = 200
   object Panel1: TPanel
     Left = 0
     Height = 216
@@ -32,7 +32,8 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Left = 88
       Height = 25
       Top = 96
-      Width = 400
+      Width = 552
+      Anchors = [akTop, akLeft, akRight]
       EditLabel.Height = 17
       EditLabel.Width = 72
       EditLabel.Caption = 'Output Path:'
@@ -159,13 +160,74 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Left = 88
       Height = 25
       Top = 64
-      Width = 400
+      Width = 552
+      Anchors = [akTop, akLeft, akRight]
       EditLabel.Height = 17
       EditLabel.Width = 31
       EditLabel.Caption = 'Tags:'
       EditLabel.ParentColor = False
       LabelPosition = lpLeft
       TabOrder = 2
+    end
+    object chkGoEnabledCGO: TCheckBox
+      Left = 344
+      Height = 21
+      Top = 30
+      Width = 100
+      Caption = 'Enabled CGO'
+      TabOrder = 3
+    end
+  end
+  object Panel3: TPanel
+    Left = 0
+    Height = 104
+    Top = 424
+    Width = 658
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 104
+    ClientWidth = 658
+    TabOrder = 2
+    Visible = False
+    object DividerBevel2: TDividerBevel
+      Left = 2
+      Height = 17
+      Top = 0
+      Width = 654
+      Caption = 'For Rust'
+      Align = alTop
+      AutoSize = False
+      BorderSpacing.Left = 2
+      BorderSpacing.Right = 2
+      Font.Style = [fsBold]
+      ParentFont = False
+      Style = gsHorLines
+    end
+  end
+  object Panel4: TPanel
+    Left = 0
+    Height = 104
+    Top = 320
+    Width = 658
+    Align = alTop
+    BevelOuter = bvNone
+    ClientHeight = 104
+    ClientWidth = 658
+    TabOrder = 3
+    Visible = False
+    object DividerBevel3: TDividerBevel
+      Left = 2
+      Height = 17
+      Top = 0
+      Width = 654
+      Caption = 'For Nim'
+      Align = alTop
+      AutoSize = False
+      BorderSpacing.Left = 2
+      BorderSpacing.Right = 2
+      Font.Style = [fsBold]
+      ParentFont = False
+      Style = gsHorLines
     end
   end
 end

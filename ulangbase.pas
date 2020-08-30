@@ -38,7 +38,7 @@ type
 
   TFnParams = array of TFnParam;
 
-  TVaildForms = array of string;
+  TAutoCreateForms = array of string;
 
   TCompileParam = record
     Input: string;
@@ -48,6 +48,7 @@ type
     GoUseTempdll: Boolean;
     GoEnabledFinalizerOn: Boolean;
     GoTags: string;
+    GoEnabledCGO: Boolean;
   end;
 
   { TProjParam }
@@ -76,7 +77,7 @@ type
     procedure InitBaseTypes; virtual; abstract;
     function GetParams(AProp: PPropInfo): TFnParams;
     function FirstCaseChar(Astr: string): string;
-    function GetVaildForms: TVaildForms;
+    function GetAutoCreateForms: TAutoCreateForms;
     function GetResFileExists: Boolean; virtual;
   public
     constructor Create;
@@ -208,7 +209,7 @@ begin
     Result[1] := LowerCase(Result[1]);
 end;
 
-function TLangBase.GetVaildForms: TVaildForms;
+function TLangBase.GetAutoCreateForms: TAutoCreateForms;
 var
   LLPRFileName, S: string;
   LStrs: TStringList;
@@ -217,26 +218,45 @@ begin
   Result := nil;
   if Assigned(LazarusIDE) and Assigned(LazarusIDE.ActiveProject) then
   begin
-    LLPRFileName := ProjectLPRFileName;
-    if FileExists(LLPRFileName) then
-    begin
-      LStrs := TStringList.Create;
-      try
-        LStrs.LoadFromFile(LLPRFileName);
-        for S in LStrs do
+    LStrs := TStringList.Create;
+    try
+      LStrs.Text:=LazarusIDE.ActiveProject.MainFile.GetSourceText;
+      for S in LStrs do
+      begin
+        // 开始提取 Application.CreateForm的
+        if S.Trim.StartsWith('Application.CreateForm(') then
         begin
-          // 开始提取 Application.CreateForm的
-          if S.Trim.StartsWith('Application.CreateForm(') then
-          begin
-            SetLength(Result, Length(Result) + 1);
-            LP := S.IndexOf(',');
-            Result[High(Result)] :=  Trim(S.Substring(LP + 1, S.IndexOf(')') - LP - 1));
-          end;
+          SetLength(Result, Length(Result) + 1);
+          LP := S.IndexOf(',');
+          Result[High(Result)] :=  Trim(S.Substring(LP + 1, S.IndexOf(')') - LP - 1));
         end;
-      finally
-        LStrs.Free;
       end;
+    finally
+      LStrs.Free;
     end;
+
+   // Logs('mainSource: '#13#10 + LazarusIDE.ActiveProject.MainFile.GetSourceText);
+
+    //LLPRFileName := ProjectLPRFileName;
+    //if FileExists(LLPRFileName) then
+    //begin
+    //  LStrs := TStringList.Create;
+    //  try
+    //    LStrs.LoadFromFile(LLPRFileName);
+    //    for S in LStrs do
+    //    begin
+    //      // 开始提取 Application.CreateForm的
+    //      if S.Trim.StartsWith('Application.CreateForm(') then
+    //      begin
+    //        SetLength(Result, Length(Result) + 1);
+    //        LP := S.IndexOf(',');
+    //        Result[High(Result)] :=  Trim(S.Substring(LP + 1, S.IndexOf(')') - LP - 1));
+    //      end;
+    //    end;
+    //  finally
+    //    LStrs.Free;
+    //  end;
+    //end;
   end;
 end;
 

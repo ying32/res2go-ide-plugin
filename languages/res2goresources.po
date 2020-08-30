@@ -25,6 +25,10 @@ msgstr ""
 msgid "Enabled Convert"
 msgstr ""
 
+#: res2goresources.rsgoenabledcgo
+msgid "Enabled CGO"
+msgstr ""
+
 #: res2goresources.rsgoenabledfinalizeron
 msgid "Enabled \"finalizerOn\""
 msgstr ""

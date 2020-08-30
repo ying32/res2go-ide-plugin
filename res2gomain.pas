@@ -52,6 +52,7 @@ type
     FEvents: array of TEventItem;
 
     FEnabledConvert: Boolean;
+    FGoEnabledCGO: Boolean;
     FGoEnabledFinalizerOn: Boolean;
     FGoTags: string;
     FGoUseTempdll: Boolean;
@@ -126,6 +127,7 @@ type
     property GoUseTempdll: Boolean read FGoUseTempdll write FGoUseTempdll;
     property GoEnabledFinalizerOn: Boolean read FGoEnabledFinalizerOn write FGoEnabledFinalizerOn;
     property GoTags: string read FGoTags write FGoTags;
+    property GoEnabledCGO: Boolean read FGoEnabledCGO write FGoEnabledCGO;
 
 
     property DefaultProjectParam: TProjParam read GetDefaultProjectParam;
@@ -171,10 +173,8 @@ uses
 
 procedure Register;
 begin
-  //TMyIDEIntf.AddHandlers;
-  Logs('MyIDEIntf.Register');
+  //Logs('MyIDEIntf.Register');
 end;
-
 
 procedure Init;
 begin
@@ -277,7 +277,7 @@ function TMyIDEIntf.GetTargetFile: string;
 begin
   Result := '$TargetFile()';
   if not IDEMacros.SubstituteMacros(Result) then
-    Result := LazarusIDE.ActiveProject.LazCompilerOptions.TargetFilename;
+    Result := LazarusIDE.ActiveProject.LazCompilerOptions.TargetFilename + LazarusIDE.ActiveProject.LazCompilerOptions.TargetFileExt;
 end;
 
 function TMyIDEIntf.GetUseScaled: Boolean;
@@ -462,6 +462,9 @@ begin
   //Logs('GetCompilerFilename=%s', [LazarusIDE.GetCompilerFilename]);
   //Logs('GetFPCompilerFilename=%s', [LazarusIDE.GetFPCompilerFilename]);
   //Logs('ActiveProject.Directory=%s', [LazarusIDE.ActiveProject.Directory]);
+  //TProject.GetAutoCreatedFormsList
+  //LazarusIDE.ActiveProject.;  // TmpAutoCreatedForms
+  //GetPropInfo();
   Result := mrOk;
 end;
 
@@ -505,6 +508,7 @@ begin
       LParams.GoUseTempdll:= Self.GoUseTempdll;
       LParams.GoEnabledFinalizerOn:= Self.GoEnabledFinalizerOn;
       LParams.GoTags:=Self.GoTags;
+      LParams.GoEnabledCGO:=Self.GoEnabledCGO;
     end;
     LResult := False;
     try

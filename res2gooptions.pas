@@ -30,6 +30,7 @@ type
   TProjectRes2goRes = class(TAbstractProjectResource)
   private
     FEnabled: Boolean;
+    FGoEnabledCGO: Boolean;
     FGoEnabledFinalizerOn: Boolean;
     FGoTags: string;
     FGoUseTempdll: Boolean;
@@ -41,6 +42,7 @@ type
     FUseOriginalFileName: Boolean;
 
     procedure SetEnabled(AValue: Boolean);
+    procedure SetGoEnabledCGO(AValue: Boolean);
     procedure SetGoEnabledFinalizerOn(AValue: Boolean);
     procedure SetGoTags(AValue: string);
     procedure SetGoUseTempdll(AValue: Boolean);
@@ -66,12 +68,14 @@ type
     property GoUseTempdll: Boolean read FGoUseTempdll write SetGoUseTempdll;
     property GoEnabledFinalizerOn: Boolean read FGoEnabledFinalizerOn write SetGoEnabledFinalizerOn;
     property GoTags: string read FGoTags write SetGoTags;
+    property GoEnabledCGO: Boolean read FGoEnabledCGO write SetGoEnabledCGO;
   end;
 
   { TRes2goOptionsFrame }
 
   TRes2goOptionsFrame = class(TAbstractIDEOptionsEditor)
     cbbLangs: TComboBox;
+    chkGoEnabledCGO: TCheckBox;
     chkGoUseTempdll: TCheckBox;
     chkGoEnabledFinalizerOn: TCheckBox;
     chkEanbledConvert: TCheckBox;
@@ -79,6 +83,8 @@ type
     chkUseDefaultWinAppRes: TCheckBox;
     chkUseOriginalFileName: TCheckBox;
     DividerBevel1: TDividerBevel;
+    DividerBevel2: TDividerBevel;
+    DividerBevel3: TDividerBevel;
     Label1: TLabel;
     lblOutLang: TLabel;
     lblOutputPath: TLabeledEdit;
@@ -86,6 +92,8 @@ type
     lblPkgName: TLabeledEdit;
     Panel1: TPanel;
     Panel2: TPanel;
+    Panel3: TPanel;
+    Panel4: TPanel;
     procedure FrameClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -115,6 +123,13 @@ procedure TProjectRes2goRes.SetEnabled(AValue: Boolean);
 begin
   if FEnabled=AValue then Exit;
   FEnabled:=AValue;
+  Self.Modified:=True;
+end;
+
+procedure TProjectRes2goRes.SetGoEnabledCGO(AValue: Boolean);
+begin
+  if FGoEnabledCGO=AValue then Exit;
+  FGoEnabledCGO:=AValue;
   Self.Modified:=True;
 end;
 
@@ -204,6 +219,7 @@ begin
     SetDeleteValue(Path+'Res2go/GoUseTempdll/Value', GoUseTempdll, False);
     SetDeleteValue(Path+'Res2go/GoEnabledFinalizerOn/Value', GoEnabledFinalizerOn, False);
     SetDeleteValue(Path+'Res2go/GoTags/Value', GoTags, '');
+    SetDeleteValue(Path+'Res2go/GoEnabledCGO/Value', GoEnabledCGO, False);
   end;
 end;
 
@@ -223,6 +239,7 @@ begin
     GoUseTempdll := GetValue(Path+'Res2go/GoUseTempdll/Value', False);
     GoEnabledFinalizerOn := GetValue(Path+'Res2go/GoEnabledFinalizerOn/Value', False);
     GoTags := GetValue(Path+'Res2go/GoTags/Value', '');
+    GoEnabledCGO := GetValue(Path+'Res2go/GoEnabledCGO/Value', False);
   end;
 
   if Assigned(MyIDEIntf) then
@@ -238,6 +255,7 @@ begin
     MyIDEIntf.GoUseTempdll:=GoUseTempdll;
     MyIDEIntf.GoEnabledFinalizerOn:=GoEnabledFinalizerOn;
     MyIDEIntf.GoTags := GoTags;
+    MyIDEIntf.GoEnabledCGO := GoEnabledCGO;
   end;
 end;
 
@@ -254,6 +272,20 @@ end;
 constructor TRes2goOptionsFrame.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+end;
+
+destructor TRes2goOptionsFrame.Destroy;
+begin
+  inherited Destroy;
+end;
+
+function TRes2goOptionsFrame.GetTitle: string;
+begin
+  Result := 'res2go';
+end;
+
+procedure TRes2goOptionsFrame.Setup(ADialog: TAbstractOptionsEditorDialog);
+begin
   chkEanbledConvert.Caption:=rsEnabledConvert;
   chkUseOriginalFileName.Caption:=rsUseOriginalFileName;
   chkSaveGfmFile.Caption := rsSaveGfmFile;
@@ -269,25 +301,7 @@ begin
   chkGoEnabledFinalizerOn.Hint:=rsGoEnabledFinalizerOnHint;
   lblGoTags.EditLabel.Caption := rsGoTags;
   DividerBevel1.Caption := rsDividerBevel1;
-
-end;
-
-destructor TRes2goOptionsFrame.Destroy;
-begin
-  inherited Destroy;
-end;
-
-function TRes2goOptionsFrame.GetTitle: string;
-begin
-  Result := 'res2go';
-end;
-
-procedure TRes2goOptionsFrame.Setup(ADialog: TAbstractOptionsEditorDialog);
-begin
-  //AppSettingsGroupBox.Caption := dlgApplicationSettings;
-  //TitleLabel.Caption := dlgPOTitle;
-  //TitleEdit.Text := '';
-  //OutputdebugString('TRes2goOptionsFrame.Setup');
+  chkGoEnabledCGO.Caption:=rsGoEnabledCGO;
 end;
 
 procedure TRes2goOptionsFrame.ReadSettings(AOptions: TAbstractIDEOptions);
@@ -309,6 +323,7 @@ begin
       MyIDEIntf.GoUseTempdll:=LRes.GoUseTempdll;
       MyIDEIntf.GoEnabledFinalizerOn:=LRes.GoEnabledFinalizerOn;
       MyIDEIntf.GoTags := LRes.GoTags;
+      MyIDEIntf.GoEnabledCGO:=LRes.GoEnabledCGO;
 
 
       chkEanbledConvert.Checked := MyIDEIntf.EnabledConvert;
@@ -321,6 +336,7 @@ begin
       chkGoUseTempdll.Checked:=LRes.GoUseTempdll;
       chkGoEnabledFinalizerOn.Checked:=LRes.GoEnabledFinalizerOn;
       lblGoTags.Text := LRes.GoTags;
+      chkGoEnabledCGO.Checked:=LRes.GoEnabledCGO;
     end;
   end;
 end;
@@ -347,6 +363,7 @@ begin
       MyIDEIntf.GoUseTempdll := chkGoUseTempdll.Checked;
       MyIDEIntf.GoEnabledFinalizerOn := chkGoEnabledFinalizerOn.Checked;
       MyIDEIntf.GoTags := lblGoTags.Text;
+      MyIDEIntf.GoEnabledCGO:=chkGoEnabledCGO.Checked;
 
 
       LRes.OutputPath := MyIDEIntf.OutputPath;
@@ -360,6 +377,7 @@ begin
       LRes.GoUseTempdll:=MyIDEIntf.GoUseTempdll;
       LRes.GoEnabledFinalizerOn:=MyIDEIntf.GoEnabledFinalizerOn;
       LRes.GoTags := MyIDEIntf.GoTags;
+      LRes.GoEnabledCGO:=MyIDEIntf.GoEnabledCGO;
     end;
   end;
 end;

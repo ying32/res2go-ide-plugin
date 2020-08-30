@@ -13,7 +13,8 @@
       </SearchPaths>
     </CompilerOptions>
     <Description Value="res2go IDE plug-in"/>
-    <Version Major="1" Release="8"/>
+    <License Value="COPYING.modifiedLGPL"/>
+    <Version Major="1" Release="9"/>
     <Files Count="7">
       <Item1>
         <Filename Value="res2gomain.pas"/>

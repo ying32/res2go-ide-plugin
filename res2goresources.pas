@@ -34,6 +34,7 @@ resourceString
   rsGoEnabledFinalizerOnHint = 'After opening the non-component class can not call the "Free" method';
   rsGoTags = 'Tags:';
   rsDividerBevel1 = 'For Golang';
+  rsGoEnabledCGO = 'Enabled CGO';
 
 implementation
 
