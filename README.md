@@ -4,14 +4,14 @@
 
 * 1、优化解析lpr文件，不再直接读取lpr文件。
 * 2、增加：`Project -> Project Options ... -> Compiler Options -> Debugging -> Generate info for the debugger`对应go ldflags `-w`。调试符号生成控制。
-* 2、增加：`Project -> Project Options ... -> Compiler Options -> Debugging -> Other debugging info -> Strip symbols form executable`对应go ldflags `-s`。控制移除符号信息。
-* 3、增加：res2go选中增加`Enabled CGO`选项。
+* 3、增加：`Project -> Project Options ... -> Compiler Options -> Debugging -> Other debugging info -> Strip symbols form executable`对应go ldflags `-s`。控制移除符号信息。
+* 4、增加：res2go选中增加`Enabled CGO`选项。
 
 #### v1.0.8
 
 * 1、增加`tempdll`约束选项，Windows与Linux下开启后可将liblcl打包到可执行文件中。
 * 2、增加`finalizerOn`约束选项，开启后非组件类可不调用`Free`方法。
-* 2、增加设置`tags`约束选项。
+* 3、增加设置`tags`约束选项。
 
 #### v1.0.7
 
