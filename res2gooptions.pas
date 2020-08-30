@@ -12,7 +12,7 @@ unit res2goOptions;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls,
+  Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls,  StrUtils,
   IDEOptionsIntf,
   IDEOptEditorIntf,
   LazIDEIntf,
@@ -30,6 +30,7 @@ type
   TProjectRes2goRes = class(TAbstractProjectResource)
   private
     FEnabled: Boolean;
+    FGoBuildMode: string;
     FGoEnabledCGO: Boolean;
     FGoEnabledFinalizerOn: Boolean;
     FGoTags: string;
@@ -42,6 +43,7 @@ type
     FUseOriginalFileName: Boolean;
 
     procedure SetEnabled(AValue: Boolean);
+    procedure SetGoBuildMode(AValue: string);
     procedure SetGoEnabledCGO(AValue: Boolean);
     procedure SetGoEnabledFinalizerOn(AValue: Boolean);
     procedure SetGoTags(AValue: string);
@@ -65,10 +67,12 @@ type
     property OutLang: TOutLang read FOutLang write SetOutLang;
     property PackageName: string read FPakcageName write SetPackageName;
     property UseDefaultWinAppRes: Boolean read FUseDefaultWinAppRes write SetUseDefaultWinAppRes;
+
     property GoUseTempdll: Boolean read FGoUseTempdll write SetGoUseTempdll;
     property GoEnabledFinalizerOn: Boolean read FGoEnabledFinalizerOn write SetGoEnabledFinalizerOn;
     property GoTags: string read FGoTags write SetGoTags;
     property GoEnabledCGO: Boolean read FGoEnabledCGO write SetGoEnabledCGO;
+    property GoBuildMode: string read FGoBuildMode write SetGoBuildMode;
   end;
 
   { TRes2goOptionsFrame }
@@ -82,10 +86,12 @@ type
     chkSaveGfmFile: TCheckBox;
     chkUseDefaultWinAppRes: TCheckBox;
     chkUseOriginalFileName: TCheckBox;
+    cbbGoBuildModes: TComboBox;
     DividerBevel1: TDividerBevel;
     DividerBevel2: TDividerBevel;
     DividerBevel3: TDividerBevel;
     Label1: TLabel;
+    Label2: TLabel;
     lblOutLang: TLabel;
     lblOutputPath: TLabeledEdit;
     lblGoTags: TLabeledEdit;
@@ -123,6 +129,13 @@ procedure TProjectRes2goRes.SetEnabled(AValue: Boolean);
 begin
   if FEnabled=AValue then Exit;
   FEnabled:=AValue;
+  Self.Modified:=True;
+end;
+
+procedure TProjectRes2goRes.SetGoBuildMode(AValue: string);
+begin
+  if FGoBuildMode=AValue then Exit;
+  FGoBuildMode:=AValue;
   Self.Modified:=True;
 end;
 
@@ -216,10 +229,12 @@ begin
     SetDeleteValue(Path+'Res2go/OutLang/Value', Integer(OutLang), 0);
     SetDeleteValue(Path+'Res2go/PackageName/Value', PackageName, 'main');
     SetDeleteValue(Path+'Res2go/UseDefaultWinAppRes/Value', UseDefaultWinAppRes, False);
+
     SetDeleteValue(Path+'Res2go/GoUseTempdll/Value', GoUseTempdll, False);
     SetDeleteValue(Path+'Res2go/GoEnabledFinalizerOn/Value', GoEnabledFinalizerOn, False);
     SetDeleteValue(Path+'Res2go/GoTags/Value', GoTags, '');
     SetDeleteValue(Path+'Res2go/GoEnabledCGO/Value', GoEnabledCGO, False);
+    SetDeleteValue(Path+'Res2go/GoBuildMode/Value', GoBuildMode, '');
   end;
 end;
 
@@ -240,6 +255,7 @@ begin
     GoEnabledFinalizerOn := GetValue(Path+'Res2go/GoEnabledFinalizerOn/Value', False);
     GoTags := GetValue(Path+'Res2go/GoTags/Value', '');
     GoEnabledCGO := GetValue(Path+'Res2go/GoEnabledCGO/Value', False);
+    GoBuildMode := GetValue(Path+'Res2go/GoBuildMode/Value', '');
   end;
 
   if Assigned(MyIDEIntf) then
@@ -256,6 +272,7 @@ begin
     MyIDEIntf.GoEnabledFinalizerOn:=GoEnabledFinalizerOn;
     MyIDEIntf.GoTags := GoTags;
     MyIDEIntf.GoEnabledCGO := GoEnabledCGO;
+    MyIDEIntf.GoBuildMode := GoBuildMode;
   end;
 end;
 
@@ -302,6 +319,7 @@ begin
   lblGoTags.EditLabel.Caption := rsGoTags;
   DividerBevel1.Caption := rsDividerBevel1;
   chkGoEnabledCGO.Caption:=rsGoEnabledCGO;
+  Label2.Caption := rsBuildMode;
 end;
 
 procedure TRes2goOptionsFrame.ReadSettings(AOptions: TAbstractIDEOptions);
@@ -324,6 +342,7 @@ begin
       MyIDEIntf.GoEnabledFinalizerOn:=LRes.GoEnabledFinalizerOn;
       MyIDEIntf.GoTags := LRes.GoTags;
       MyIDEIntf.GoEnabledCGO:=LRes.GoEnabledCGO;
+      MyIDEIntf.GoBuildMode := LRes.GoBuildMode;
 
 
       chkEanbledConvert.Checked := MyIDEIntf.EnabledConvert;
@@ -337,6 +356,7 @@ begin
       chkGoEnabledFinalizerOn.Checked:=LRes.GoEnabledFinalizerOn;
       lblGoTags.Text := LRes.GoTags;
       chkGoEnabledCGO.Checked:=LRes.GoEnabledCGO;
+      cbbGoBuildModes.ItemIndex:=cbbGoBuildModes.Items.IndexOf(LRes.GoBuildMode);
     end;
   end;
 end;
@@ -364,6 +384,7 @@ begin
       MyIDEIntf.GoEnabledFinalizerOn := chkGoEnabledFinalizerOn.Checked;
       MyIDEIntf.GoTags := lblGoTags.Text;
       MyIDEIntf.GoEnabledCGO:=chkGoEnabledCGO.Checked;
+      MyIDEIntf.GoBuildMode:= IfThen(cbbGoBuildModes.ItemIndex = -1, '', cbbGoBuildModes.Items[cbbGoBuildModes.ItemIndex]);
 
 
       LRes.OutputPath := MyIDEIntf.OutputPath;
@@ -378,6 +399,7 @@ begin
       LRes.GoEnabledFinalizerOn:=MyIDEIntf.GoEnabledFinalizerOn;
       LRes.GoTags := MyIDEIntf.GoTags;
       LRes.GoEnabledCGO:=MyIDEIntf.GoEnabledCGO;
+      LRes.GoBuildMode:=MyIDEIntf.GoBuildMode;
     end;
   end;
 end;

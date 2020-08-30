@@ -84,6 +84,7 @@ var
   LTags: string = '';
   LIsWindows: Boolean = False;
   LLdFlags: string = '';
+  LBuildMode: string = '';
 begin
   Result := False;
   if not Assigned(RunExternalTool) then
@@ -116,9 +117,9 @@ begin
 
   // -tags
   if AParams.GoTags <> '' then
-    LTags := AParams.GoTags;
+    LTags += AParams.GoTags;
   if AParams.GoUseTempdll and (LOS <> 'darwin') and (not LTags.Contains('tempdll')) then
-    LTags := ' tempdll';
+    LTags += ' tempdll';
   if AParams.GoEnabledFinalizerOn and (not LTags.Contains('finalizerOn')) then
     LTags += ' finalizerOn';
 
@@ -126,8 +127,12 @@ begin
   if not LTags.IsEmpty then
     LTags := ' -tags="' + LTags + '"';
 
+  // -buildmode
+  if AParams.GoBuildMode <> '' then
+    LBuildMode := ' -buildmode=' + AParams.GoBuildMode;
+
   // command line
-  LCmd := Format('build -i%s%s -o "%s"', [LLdFlags, LTags, AParams.Output]);
+  LCmd := Format('build -i%s%s%s -o "%s"', [LBuildMode, LLdFlags, LTags, AParams.Output]);
   LCmd2 := 'go ' + LCmd;
   Logs('Complie Command: ' + LCmd2);
   LTool := TIDEExternalToolOptions.Create;

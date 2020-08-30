@@ -49,6 +49,7 @@ type
     GoEnabledFinalizerOn: Boolean;
     GoTags: string;
     GoEnabledCGO: Boolean;
+    GoBuildMode: string;
   end;
 
   { TProjParam }

@@ -35,6 +35,7 @@ resourceString
   rsGoTags = 'Tags:';
   rsDividerBevel1 = 'For Golang';
   rsGoEnabledCGO = 'Enabled CGO';
+  rsBuildMode = 'Build mode: ';
 
 implementation
 

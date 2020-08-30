@@ -1,5 +1,10 @@
 图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420  
 
+#### v1.0.10
+
+* 1、修复`Go Tags`在某些情况下会丢失。
+* 2、res2go选项中增加`Go Build mode`选择。
+
 #### v1.0.9
 
 * 1、优化解析lpr文件，不再直接读取lpr文件。

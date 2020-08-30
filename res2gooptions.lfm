@@ -78,7 +78,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Left = 88
       Height = 25
       Top = 166
-      Width = 132
+      Width = 168
       ItemHeight = 17
       ItemIndex = 0
       Items.Strings = (
@@ -91,7 +91,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Text = 'Go'
     end
     object lblPkgName: TLabeledEdit
-      Left = 344
+      Left = 396
       Height = 25
       Top = 166
       Width = 144
@@ -114,12 +114,12 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   end
   object Panel2: TPanel
     Left = 0
-    Height = 104
+    Height = 144
     Top = 216
     Width = 658
     Align = alTop
     BevelOuter = bvNone
-    ClientHeight = 104
+    ClientHeight = 144
     ClientWidth = 658
     TabOrder = 1
     object DividerBevel1: TDividerBevel
@@ -177,11 +177,38 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Caption = 'Enabled CGO'
       TabOrder = 3
     end
+    object Label2: TLabel
+      Left = 16
+      Height = 17
+      Top = 107
+      Width = 70
+      Caption = 'Build mode:'
+      ParentColor = False
+    end
+    object cbbGoBuildModes: TComboBox
+      Left = 88
+      Height = 25
+      Top = 104
+      Width = 168
+      ItemHeight = 17
+      Items.Strings = (
+        'default'
+        'archive'
+        'c-archive'
+        'c-shared'
+        'shared'
+        'exe'
+        'pie'
+        'plugin'
+      )
+      Style = csDropDownList
+      TabOrder = 4
+    end
   end
   object Panel3: TPanel
     Left = 0
     Height = 104
-    Top = 424
+    Top = 464
     Width = 658
     Align = alTop
     BevelOuter = bvNone
@@ -207,7 +234,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   object Panel4: TPanel
     Left = 0
     Height = 104
-    Top = 320
+    Top = 360
     Width = 658
     Align = alTop
     BevelOuter = bvNone
