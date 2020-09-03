@@ -40,7 +40,7 @@ type
 
     function GetPackageImportPath(const AOutPath: string): string;
 
-    procedure AddOrRemoveImports(ALists: TStrings; AAdds, ARemoves: array of string; AUIPackageName: string);
+    procedure AddOrRemoveImports(ALists: TStrings; AAdds, ARemoves: array of string; AUIPackageName: string; AOutPath: string);
     procedure ProcessMainFunc(ALists: TStrings; ATitle: string; AUseScaled: Boolean; AForms: array of string);
     function GetOS(ATargetOS: string): string;
     function GetARCH(ATargetCPU: string): string;
@@ -199,9 +199,9 @@ begin
       LMainFile.LoadFromFile(LSaveFileName);
 
       if AParam.UseDefaultWinAppRes then
-        AddOrRemoveImports(LMainFile, PkgArr, [], Self.PackageName)
+        AddOrRemoveImports(LMainFile, PkgArr, [], Self.PackageName, AParam.OutPath)
       else
-        AddOrRemoveImports(LMainFile, [], PkgArr, Self.PackageName);
+        AddOrRemoveImports(LMainFile, [], PkgArr, Self.PackageName, AParam.OutPath);
 
       ProcessMainFunc(LMainFile, AParam.Title, AParam.UseScaled, GetForms);
     end;
@@ -642,31 +642,34 @@ begin
 end;
 
 function TGoLang.GetPackageImportPath(const AOutPath: string): string;
-//var
-//  LGoPaths, LPath: string;
-//  LPaths: array of string;
-//  LP: Integer;
+var
+  LGoPaths, LPath, LCPath, LCOPath, LRealPath: string;
+  LPaths: array of string;
+  LP: Integer;
 begin
   Result := '';
   if IsMainPackage then
     Exit;
-  //LGoPaths := GetEnvironmentVariable('GOPATH');
-  //if not LGoPaths.IsEmpty then
-  //begin
-  //  LPaths := LGoPaths.Split([';']);
-  //  for LPath in LPaths do
-  //  begin
-  //    if CompareFilenameStarts() = 0 then
-  //    begin
-  //      Exit('');
-  //    end;
-  //  end;
-  //end;
+  LGoPaths := GetEnvironmentVariable('GOPATH');
+  if not LGoPaths.IsEmpty then
+  begin
+    LPaths := LGoPaths.Split([';']);
+    for LPath in LPaths do
+    begin
+      LCPath := AppendPathDelim(AppendPathDelim(LPath.Trim) + 'src');
+      LCOPath := CleanAndExpandDirectory(AOutPath); //AppendPathDelim(AOutPath);
+      if SameText(LCPath, Copy(LCOPath, 1, Length(LCPath))) then
+      begin
+        LRealPath := Copy(LCOPath, Length(LCPath) + 1, Length(LCOPath) - Length(LCPath) - 1);
+        Exit(LRealPath.Replace('\', '/') + '/' + PackageName);
+      end;
+    end;
+  end;
   Result := './' + PackageName;
 end;
 
 procedure TGoLang.AddOrRemoveImports(ALists: TStrings; AAdds,
-  ARemoves: array of string; AUIPackageName: string);
+  ARemoves: array of string; AUIPackageName: string; AOutPath: string);
 const
   Keywords: array[0..3] of string = ('var', 'const', 'type', 'func');
 
@@ -862,7 +865,7 @@ begin
     begin
       with LastItem do
       begin
-        LS := '"./' + AUIPackageName + '"';
+        LS := '"' + GetPackageImportPath(AOutPath) + '"';
         if &Single then
           ALists.Insert(LineNumber + 1, 'import ' + LS)
         else
@@ -1062,8 +1065,6 @@ begin
   else if SameText(ATargetCPU, 'x86_64') then
     Result := 'amd64';
 end;
-
-
 
 procedure TGoLang.InitTypeLists;
 begin

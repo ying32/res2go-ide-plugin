@@ -1,5 +1,10 @@
 图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420  
 
+#### v1.0.11
+
+* 1、修复保存设置时会弹出错误问题。
+* 2、增加：如在GoPath中创建工程，如果包名不为main则导入以GoPath为路径的包名，反之导入相对包名。
+
 #### v1.0.10
 
 * 1、修复`Go Tags`在某些情况下会丢失。

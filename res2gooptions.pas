@@ -384,7 +384,12 @@ begin
       MyIDEIntf.GoEnabledFinalizerOn := chkGoEnabledFinalizerOn.Checked;
       MyIDEIntf.GoTags := lblGoTags.Text;
       MyIDEIntf.GoEnabledCGO:=chkGoEnabledCGO.Checked;
-      MyIDEIntf.GoBuildMode:= IfThen(cbbGoBuildModes.ItemIndex = -1, '', cbbGoBuildModes.Items[cbbGoBuildModes.ItemIndex]);
+      if cbbGoBuildModes.ItemIndex >= 0 then
+        MyIDEIntf.GoBuildMode := cbbGoBuildModes.Items[cbbGoBuildModes.ItemIndex]
+      else
+        MyIDEIntf.GoBuildMode := '';
+
+     // MyIDEIntf.GoBuildMode:= IfThen(cbbGoBuildModes.ItemIndex >= 0, cbbGoBuildModes.Items[cbbGoBuildModes.ItemIndex], '');   ???????
 
 
       LRes.OutputPath := MyIDEIntf.OutputPath;
