@@ -1,5 +1,11 @@
 图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420  
 
+#### v1.0.12
+
+* 1、修改：非Windows下不再转换资源，因为没有windres这个东西。
+* 2、修复：非Windows下编译不成功。
+* 3、修复：非Windows下默认启用CGO选项。
+
 #### v1.0.11
 
 * 1、修复保存设置时会弹出错误问题。
