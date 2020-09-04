@@ -154,8 +154,11 @@ begin
 
     LTool.Parsers.Add(SubToolFPC);
     LTool.Parsers.Add(SubToolDefault);
+  {$ifdef windows}
+    // 非windows下不需要这个操作
     LTool.ShowConsole := True;
     LTool.HideWindow := True;
+  {$endif}
     LTool.ResolveMacros := True;
     Result := RunExternalTool(LTool);
   finally
