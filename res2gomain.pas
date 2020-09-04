@@ -430,11 +430,15 @@ begin
     ClearMsg;
     CheckAndCreateDir;
     Lang.ConvertProjectFile(DefaultProjectParam);
+  {$ifdef windows}
     if ReConvertRes and (not UseDefaultWinAppRes) then
     begin
       ReConvertRes := False;
       Lang.ConvertResource(ResFileName, RealOutputPath);
     end;
+  {$else}
+    // 暂时不持非Windows下转换资源
+  {$endif}
   end;
   Result := mrOk;
 end;
