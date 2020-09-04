@@ -91,10 +91,11 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Text = 'Go'
     end
     object lblPkgName: TLabeledEdit
-      Left = 396
+      Left = 436
       Height = 25
       Top = 166
-      Width = 144
+      Width = 204
+      Anchors = [akTop, akLeft, akRight]
       EditLabel.Height = 17
       EditLabel.Width = 100
       EditLabel.Caption = 'Package Name：'
