@@ -29,7 +29,7 @@ type
 
   TProjectRes2goRes = class(TAbstractProjectResource)
   private const
-    NonWinBoolValue = {$ifdef windows}False{$else}True{$endif};
+    DefaultCGOValue = {$ifdef windows}False{$else}True{$endif};
   private
     FEnabled: Boolean;
     FGoBuildMode: string;
@@ -237,7 +237,7 @@ begin
     SetDeleteValue(Path+'Res2go/GoUseTempdll/Value', GoUseTempdll, False);
     SetDeleteValue(Path+'Res2go/GoEnabledFinalizerOn/Value', GoEnabledFinalizerOn, False);
     SetDeleteValue(Path+'Res2go/GoTags/Value', GoTags, '');
-    SetDeleteValue(Path+'Res2go/GoEnabledCGO/Value', GoEnabledCGO, NonWinBoolValue);
+    SetDeleteValue(Path+'Res2go/GoEnabledCGO/Value', GoEnabledCGO, DefaultCGOValue);
     SetDeleteValue(Path+'Res2go/GoBuildMode/Value', GoBuildMode, '');
   end;
 end;
@@ -258,7 +258,7 @@ begin
     GoUseTempdll := GetValue(Path+'Res2go/GoUseTempdll/Value', False);
     GoEnabledFinalizerOn := GetValue(Path+'Res2go/GoEnabledFinalizerOn/Value', False);
     GoTags := GetValue(Path+'Res2go/GoTags/Value', '');
-    GoEnabledCGO := GetValue(Path+'Res2go/GoEnabledCGO/Value', NonWinBoolValue);
+    GoEnabledCGO := GetValue(Path+'Res2go/GoEnabledCGO/Value', DefaultCGOValue);
     GoBuildMode := GetValue(Path+'Res2go/GoBuildMode/Value', '');
   end;
 
