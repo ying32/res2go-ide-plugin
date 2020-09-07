@@ -2,9 +2,9 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   Left = 0
   Height = 628
   Top = 0
-  Width = 658
+  Width = 892
   ClientHeight = 628
-  ClientWidth = 658
+  ClientWidth = 892
   OnClick = FrameClick
   TabOrder = 0
   DesignLeft = 867
@@ -13,11 +13,11 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
     Left = 0
     Height = 216
     Top = 0
-    Width = 658
+    Width = 892
     Align = alTop
     BevelOuter = bvNone
     ClientHeight = 216
-    ClientWidth = 658
+    ClientWidth = 892
     TabOrder = 0
     object chkEanbledConvert: TCheckBox
       Left = 16
@@ -32,7 +32,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Left = 88
       Height = 25
       Top = 96
-      Width = 552
+      Width = 786
       Anchors = [akTop, akLeft, akRight]
       EditLabel.Height = 17
       EditLabel.Width = 72
@@ -94,7 +94,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Left = 436
       Height = 25
       Top = 166
-      Width = 204
+      Width = 438
       Anchors = [akTop, akLeft, akRight]
       EditLabel.Height = 17
       EditLabel.Width = 100
@@ -115,19 +115,19 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   end
   object Panel2: TPanel
     Left = 0
-    Height = 144
+    Height = 160
     Top = 216
-    Width = 658
+    Width = 892
     Align = alTop
     BevelOuter = bvNone
-    ClientHeight = 144
-    ClientWidth = 658
+    ClientHeight = 160
+    ClientWidth = 892
     TabOrder = 1
     object DividerBevel1: TDividerBevel
       Left = 2
       Height = 17
       Top = 0
-      Width = 654
+      Width = 888
       Caption = 'For Golang'
       Align = alTop
       AutoSize = False
@@ -161,7 +161,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Left = 88
       Height = 25
       Top = 64
-      Width = 552
+      Width = 786
       Anchors = [akTop, akLeft, akRight]
       EditLabel.Height = 17
       EditLabel.Width = 31
@@ -205,23 +205,33 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Style = csDropDownList
       TabOrder = 4
     end
+    object lblBuildModeHint: TLabel
+      Left = 88
+      Height = 17
+      Top = 136
+      Width = 444
+      Caption = 'If go version>=1.15, please select "exe" mode, otherwise, no need to select.'
+      Font.Color = clGreen
+      ParentColor = False
+      ParentFont = False
+    end
   end
   object Panel3: TPanel
     Left = 0
     Height = 104
-    Top = 464
-    Width = 658
+    Top = 480
+    Width = 892
     Align = alTop
     BevelOuter = bvNone
     ClientHeight = 104
-    ClientWidth = 658
+    ClientWidth = 892
     TabOrder = 2
     Visible = False
     object DividerBevel2: TDividerBevel
       Left = 2
       Height = 17
       Top = 0
-      Width = 654
+      Width = 888
       Caption = 'For Rust'
       Align = alTop
       AutoSize = False
@@ -235,19 +245,19 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   object Panel4: TPanel
     Left = 0
     Height = 104
-    Top = 360
-    Width = 658
+    Top = 376
+    Width = 892
     Align = alTop
     BevelOuter = bvNone
     ClientHeight = 104
-    ClientWidth = 658
+    ClientWidth = 892
     TabOrder = 3
     Visible = False
     object DividerBevel3: TDividerBevel
       Left = 2
       Height = 17
       Top = 0
-      Width = 654
+      Width = 888
       Caption = 'For Nim'
       Align = alTop
       AutoSize = False

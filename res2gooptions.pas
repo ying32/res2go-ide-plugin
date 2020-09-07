@@ -96,6 +96,7 @@ type
     DividerBevel3: TDividerBevel;
     Label1: TLabel;
     Label2: TLabel;
+    lblBuildModeHint: TLabel;
     lblOutLang: TLabel;
     lblOutputPath: TLabeledEdit;
     lblGoTags: TLabeledEdit;
@@ -324,6 +325,7 @@ begin
   DividerBevel1.Caption := rsDividerBevel1;
   chkGoEnabledCGO.Caption:=rsGoEnabledCGO;
   Label2.Caption := rsBuildMode;
+  lblBuildModeHint.Caption := rsBuildModeHint;
 end;
 
 procedure TRes2goOptionsFrame.ReadSettings(AOptions: TAbstractIDEOptions);

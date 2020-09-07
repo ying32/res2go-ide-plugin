@@ -36,6 +36,7 @@ resourceString
   rsDividerBevel1 = 'For Golang';
   rsGoEnabledCGO = 'Enabled CGO';
   rsBuildMode = 'Build mode: ';
+  rsBuildModeHint = 'If go version>=1.15, please select "exe" mode, otherwise, no need to select.';
 
 implementation
 

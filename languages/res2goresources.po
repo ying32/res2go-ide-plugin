@@ -13,6 +13,10 @@ msgstr ""
 msgid "Build mode: "
 msgstr ""
 
+#: res2goresources.rsbuildmodehint
+msgid "If go version>=1.15, please select \"exe\" mode, otherwise, no need to select."
+msgstr ""
+
 #: res2goresources.rscomponentisnotsupported
 msgid "\"%s:%s\" is not supported."
 msgstr ""

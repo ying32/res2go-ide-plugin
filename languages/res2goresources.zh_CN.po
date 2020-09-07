@@ -13,6 +13,10 @@ msgstr "由res2go IDE插件自动生成，不要编辑。"
 msgid "Build mode: "
 msgstr ""
 
+#: res2goresources.rsbuildmodehint
+msgid "If go version>=1.15, please select \"exe\" mode, otherwise, no need to select."
+msgstr "如果go版本>=1.15请选择\"exe\"模式，反之无需选择。"
+
 #: res2goresources.rscomponentisnotsupported
 msgid "\"%s:%s\" is not supported."
 msgstr "“%s:%s”不被支持。"
