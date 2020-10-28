@@ -115,12 +115,12 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   end
   object Panel2: TPanel
     Left = 0
-    Height = 160
+    Height = 232
     Top = 216
     Width = 892
     Align = alTop
     BevelOuter = bvNone
-    ClientHeight = 160
+    ClientHeight = 232
     ClientWidth = 892
     TabOrder = 1
     object DividerBevel1: TDividerBevel
@@ -215,11 +215,31 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       ParentColor = False
       ParentFont = False
     end
+    object Label3: TLabel
+      Left = 16
+      Height = 17
+      Top = 176
+      Width = 57
+      Caption = 'GOROOT:'
+      ParentColor = False
+    end
+    object edtGoRoot: TDirectoryEdit
+      Left = 88
+      Height = 25
+      Top = 175
+      Width = 786
+      ShowHidden = False
+      ButtonWidth = 23
+      NumGlyphs = 1
+      Anchors = [akTop, akLeft, akRight]
+      MaxLength = 0
+      TabOrder = 5
+    end
   end
   object Panel3: TPanel
     Left = 0
     Height = 104
-    Top = 480
+    Top = 552
     Width = 892
     Align = alTop
     BevelOuter = bvNone
@@ -245,7 +265,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
   object Panel4: TPanel
     Left = 0
     Height = 104
-    Top = 376
+    Top = 448
     Width = 892
     Align = alTop
     BevelOuter = bvNone

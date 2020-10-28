@@ -55,6 +55,7 @@ type
     FGoBuildMode: string;
     FGoEnabledCGO: Boolean;
     FGoEnabledFinalizerOn: Boolean;
+    FGoRoot: string;
     FGoTags: string;
     FGoUseTempdll: Boolean;
     FOutLang: TOutLang;
@@ -131,6 +132,7 @@ type
     property GoTags: string read FGoTags write FGoTags;
     property GoEnabledCGO: Boolean read FGoEnabledCGO write FGoEnabledCGO;
     property GoBuildMode: string read FGoBuildMode write FGoBuildMode;
+    property GoRoot: string read FGoRoot write FGoRoot;
 
 
     property DefaultProjectParam: TProjParam read GetDefaultProjectParam;
@@ -518,6 +520,7 @@ begin
       LParams.GoTags:=Self.GoTags;
       LParams.GoEnabledCGO:=Self.GoEnabledCGO;
       LParams.GoBuildMode:=Self.GoBuildMode;
+      LParams.GoRoot:= Self.GoRoot;
     end;
 
     LResult := False;

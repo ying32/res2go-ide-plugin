@@ -1,5 +1,10 @@
 图文说明：https://gitee.com/ying32/govcl/wikis/pages?sort_id=2645001&doc_id=102420  
 
+#### v1.0.13
+
+* 1、修改：非Windows下强制使用CGO选项。
+* 2、增加：可自定义`GoPATH`变量路径。
+
 #### v1.0.12
 
 * 1、修改：非Windows下不再转换资源，因为没有windres这个东西。

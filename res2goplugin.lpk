@@ -14,7 +14,7 @@
     </CompilerOptions>
     <Description Value="res2go IDE plug-in"/>
     <License Value="COPYING.modifiedLGPL"/>
-    <Version Major="1" Release="12"/>
+    <Version Major="1" Release="13"/>
     <Files Count="7">
       <Item1>
         <Filename Value="res2gomain.pas"/>

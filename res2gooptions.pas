@@ -12,7 +12,7 @@ unit res2goOptions;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls,  StrUtils,
+  Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, EditBtn,  StrUtils,
   IDEOptionsIntf,
   IDEOptEditorIntf,
   LazIDEIntf,
@@ -35,6 +35,7 @@ type
     FGoBuildMode: string;
     FGoEnabledCGO: Boolean;
     FGoEnabledFinalizerOn: Boolean;
+    FGoRoot: string;
     FGoTags: string;
     FGoUseTempdll: Boolean;
     FOutLang: TOutLang;
@@ -44,12 +45,13 @@ type
     FUseDefaultWinAppRes: Boolean;
     FUseOriginalFileName: Boolean;
 
-
+    procedure Changed;
 
     procedure SetEnabled(AValue: Boolean);
     procedure SetGoBuildMode(AValue: string);
     procedure SetGoEnabledCGO(AValue: Boolean);
     procedure SetGoEnabledFinalizerOn(AValue: Boolean);
+    procedure SetGoRoot(AValue: string);
     procedure SetGoTags(AValue: string);
     procedure SetGoUseTempdll(AValue: Boolean);
     procedure SetOutLang(AValue: TOutLang);
@@ -77,6 +79,7 @@ type
     property GoTags: string read FGoTags write SetGoTags;
     property GoEnabledCGO: Boolean read FGoEnabledCGO write SetGoEnabledCGO;
     property GoBuildMode: string read FGoBuildMode write SetGoBuildMode;
+    property GoRoot: string read FGoRoot write SetGoRoot;
   end;
 
   { TRes2goOptionsFrame }
@@ -91,11 +94,13 @@ type
     chkUseDefaultWinAppRes: TCheckBox;
     chkUseOriginalFileName: TCheckBox;
     cbbGoBuildModes: TComboBox;
+    edtGoRoot: TDirectoryEdit;
     DividerBevel1: TDividerBevel;
     DividerBevel2: TDividerBevel;
     DividerBevel3: TDividerBevel;
     Label1: TLabel;
     Label2: TLabel;
+    Label3: TLabel;
     lblBuildModeHint: TLabel;
     lblOutLang: TLabel;
     lblOutputPath: TLabeledEdit;
@@ -130,88 +135,100 @@ const
 
 { TProjectRes2goRes }
 
+procedure TProjectRes2goRes.Changed;
+begin
+  Self.Modified:= True;
+end;
+
 procedure TProjectRes2goRes.SetEnabled(AValue: Boolean);
 begin
   if FEnabled=AValue then Exit;
   FEnabled:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetGoBuildMode(AValue: string);
 begin
   if FGoBuildMode=AValue then Exit;
   FGoBuildMode:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetGoEnabledCGO(AValue: Boolean);
 begin
   if FGoEnabledCGO=AValue then Exit;
   FGoEnabledCGO:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetGoEnabledFinalizerOn(AValue: Boolean);
 begin
   if FGoEnabledFinalizerOn=AValue then Exit;
   FGoEnabledFinalizerOn:=AValue;
-  Self.Modified:=True;
+  Changed;
+end;
+
+procedure TProjectRes2goRes.SetGoRoot(AValue: string);
+begin
+  if FGoRoot=AValue then Exit;
+  FGoRoot:=AValue;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetGoTags(AValue: string);
 begin
   if FGoTags=AValue then Exit;
   FGoTags:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetGoUseTempdll(AValue: Boolean);
 begin
   if FGoUseTempdll=AValue then Exit;
   FGoUseTempdll:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetOutLang(AValue: TOutLang);
 begin
   if FOutLang=AValue then Exit;
   FOutLang:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetOutputPath(AValue: string);
 begin
   if FOutputPath=AValue then Exit;
   FOutputPath:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetPackageName(AValue: string);
 begin
   if FPakcageName=AValue then Exit;
   FPakcageName:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetSaveGfmFile(AValue: Boolean);
 begin
   if FSaveGfmFile=AValue then Exit;
   FSaveGfmFile:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetUseDefaultWinAppRes(AValue: Boolean);
 begin
   if FUseDefaultWinAppRes=AValue then Exit;
   FUseDefaultWinAppRes:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 procedure TProjectRes2goRes.SetUseOriginalFileName(AValue: Boolean);
 begin
   if FUseOriginalFileName=AValue then Exit;
   FUseOriginalFileName:=AValue;
-  Self.Modified:=True;
+  Changed;
 end;
 
 function TProjectRes2goRes.UpdateResources(
@@ -240,6 +257,7 @@ begin
     SetDeleteValue(Path+'Res2go/GoTags/Value', GoTags, '');
     SetDeleteValue(Path+'Res2go/GoEnabledCGO/Value', GoEnabledCGO, DefaultCGOValue);
     SetDeleteValue(Path+'Res2go/GoBuildMode/Value', GoBuildMode, '');
+    SetDeleteValue(Path+'Res2go/GoRoot/Value', GoRoot, '');
   end;
 end;
 
@@ -259,8 +277,9 @@ begin
     GoUseTempdll := GetValue(Path+'Res2go/GoUseTempdll/Value', False);
     GoEnabledFinalizerOn := GetValue(Path+'Res2go/GoEnabledFinalizerOn/Value', False);
     GoTags := GetValue(Path+'Res2go/GoTags/Value', '');
-    GoEnabledCGO := GetValue(Path+'Res2go/GoEnabledCGO/Value', DefaultCGOValue);
+    GoEnabledCGO := {$ifndef windows}True{$else}GetValue(Path+'Res2go/GoEnabledCGO/Value', False){$endif};
     GoBuildMode := GetValue(Path+'Res2go/GoBuildMode/Value', '');
+    GoRoot := Trim(GetValue(Path+'Res2go/GoRoot/Value', GetEnvironmentVariable('GOROOT')));
   end;
 
   if Assigned(MyIDEIntf) then
@@ -269,15 +288,16 @@ begin
     MyIDEIntf.OutputPath := OutputPath;
     MyIDEIntf.UseOriginalFileName := UseOriginalFileName;
     MyIDEIntf.SaveGfmFile := SaveGfmFile;
-    MyIDEIntf.OutLang:=OutLang;
-    MyIDEIntf.PackageName:=PackageName;
+    MyIDEIntf.OutLang := OutLang;
+    MyIDEIntf.PackageName := PackageName;
     MyIDEIntf.UseDefaultWinAppRes := UseDefaultWinAppRes;
 
-    MyIDEIntf.GoUseTempdll:=GoUseTempdll;
-    MyIDEIntf.GoEnabledFinalizerOn:=GoEnabledFinalizerOn;
+    MyIDEIntf.GoUseTempdll := GoUseTempdll;
+    MyIDEIntf.GoEnabledFinalizerOn := GoEnabledFinalizerOn;
     MyIDEIntf.GoTags := GoTags;
     MyIDEIntf.GoEnabledCGO := GoEnabledCGO;
     MyIDEIntf.GoBuildMode := GoBuildMode;
+    MyIDEIntf.GoRoot := GoRoot;
   end;
 end;
 
@@ -326,6 +346,10 @@ begin
   chkGoEnabledCGO.Caption:=rsGoEnabledCGO;
   Label2.Caption := rsBuildMode;
   lblBuildModeHint.Caption := rsBuildModeHint;
+{$ifndef windows}
+  chkGoEnabledCGO.Enabled := False;
+  chkGoEnabledCGO.Checked := True;
+{$endif}
 end;
 
 procedure TRes2goOptionsFrame.ReadSettings(AOptions: TAbstractIDEOptions);
@@ -339,16 +363,17 @@ begin
     begin
       MyIDEIntf.EnabledConvert := LRes.Enabled;
       MyIDEIntf.OutputPath := LRes.OutputPath;
-      MyIDEIntf.UseOriginalFileName:= LRes.UseOriginalFileName;
+      MyIDEIntf.UseOriginalFileName := LRes.UseOriginalFileName;
       MyIDEIntf.SaveGfmFile := LRes.SaveGfmFile;
       MyIDEIntf.OutLang := LRes.OutLang;
-      MyIDEIntf.PackageName:=LRes.PackageName;
+      MyIDEIntf.PackageName :=LRes.PackageName;
       MyIDEIntf.UseDefaultWinAppRes := LRes.UseDefaultWinAppRes;
-      MyIDEIntf.GoUseTempdll:=LRes.GoUseTempdll;
-      MyIDEIntf.GoEnabledFinalizerOn:=LRes.GoEnabledFinalizerOn;
+      MyIDEIntf.GoUseTempdll := LRes.GoUseTempdll;
+      MyIDEIntf.GoEnabledFinalizerOn :=LRes.GoEnabledFinalizerOn;
       MyIDEIntf.GoTags := LRes.GoTags;
-      MyIDEIntf.GoEnabledCGO:=LRes.GoEnabledCGO;
+      MyIDEIntf.GoEnabledCGO :=LRes.GoEnabledCGO;
       MyIDEIntf.GoBuildMode := LRes.GoBuildMode;
+      MyIDEIntf.GoRoot := LRes.GoRoot;
 
 
       chkEanbledConvert.Checked := MyIDEIntf.EnabledConvert;
@@ -363,6 +388,7 @@ begin
       lblGoTags.Text := LRes.GoTags;
       chkGoEnabledCGO.Checked:=LRes.GoEnabledCGO;
       cbbGoBuildModes.ItemIndex:=cbbGoBuildModes.Items.IndexOf(LRes.GoBuildMode);
+      edtGoRoot.Text := Trim(LRes.GoRoot);
     end;
   end;
 end;
@@ -394,6 +420,7 @@ begin
         MyIDEIntf.GoBuildMode := cbbGoBuildModes.Items[cbbGoBuildModes.ItemIndex]
       else
         MyIDEIntf.GoBuildMode := '';
+      MyIDEIntf.GoRoot := Trim(edtGoRoot.Text);
 
      // MyIDEIntf.GoBuildMode:= IfThen(cbbGoBuildModes.ItemIndex >= 0, cbbGoBuildModes.Items[cbbGoBuildModes.ItemIndex], '');   ???????
 
@@ -411,6 +438,7 @@ begin
       LRes.GoTags := MyIDEIntf.GoTags;
       LRes.GoEnabledCGO:=MyIDEIntf.GoEnabledCGO;
       LRes.GoBuildMode:=MyIDEIntf.GoBuildMode;
+      LRes.GoRoot:= MyIDEIntf.GoRoot;
     end;
   end;
 end;

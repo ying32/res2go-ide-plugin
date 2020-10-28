@@ -50,6 +50,7 @@ type
     GoTags: string;
     GoEnabledCGO: Boolean;
     GoBuildMode: string;
+    GoRoot: string;
   end;
 
   { TProjParam }

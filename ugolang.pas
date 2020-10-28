@@ -85,6 +85,7 @@ var
   LIsWindows: Boolean = False;
   LLdFlags: string = '';
   LBuildMode: string = '';
+  LPaths: string;
 begin
   Result := False;
   if not Assigned(RunExternalTool) then
@@ -151,6 +152,17 @@ begin
 
     // cgo
     LTool.EnvironmentOverrides.Values['CGO_ENABLED'] := IfThen(AParams.GoEnabledCGO, '1', '0');
+
+    // GoRoot
+    if not AParams.GoRoot.IsEmpty then
+    begin
+      LTool.EnvironmentOverrides.Values['GOROOT'] := AParams.GoRoot;
+      LPaths := LTool.EnvironmentOverrides.Values['PATH'];
+      if not LPaths.EndsWith(';') then
+        LPaths := LPaths + ';';
+      LTool.EnvironmentOverrides.Values['PATH'] := LPaths + AppendPathDelim(AParams.GoRoot) + 'bin';
+    end;
+
 
     LTool.Parsers.Add(SubToolFPC);
     LTool.Parsers.Add(SubToolDefault);
