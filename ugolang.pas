@@ -140,7 +140,8 @@ begin
   try
     LTool.Title := LCmd2;
     LTool.Hint := LCmd2;
-    LTool.Executable := 'go'{$ifdef windows}+'.exe'{$endif};
+    // 这里要全路径，不然macOS下执行有问题
+    LTool.Executable := AppendPathDelim(AppendPathDelim(AParams.GoRoot) + 'bin') + 'go'{$ifdef windows}+'.exe'{$endif};
     LTool.WorkingDirectory := AParams.Input;
     LTool.CmdLineParams := LCmd;
     //Application.GetEnvironmentList(LTool.EnvironmentOverrides);
@@ -157,10 +158,10 @@ begin
     if not AParams.GoRoot.IsEmpty then
     begin
       LTool.EnvironmentOverrides.Values['GOROOT'] := AParams.GoRoot;
-      LPaths := LTool.EnvironmentOverrides.Values['PATH'];
-      if not LPaths.EndsWith(';') then
-        LPaths := LPaths + ';';
-      LTool.EnvironmentOverrides.Values['PATH'] := LPaths + AppendPathDelim(AParams.GoRoot) + 'bin';
+      //LPaths := LTool.EnvironmentOverrides.Values['PATH'];
+      //if not LPaths.EndsWith(';') then
+      //  LPaths := LPaths + ';';
+      //LTool.EnvironmentOverrides.Values['PATH'] := LPaths + AppendPathDelim(AParams.GoRoot) + 'bin';
     end;
 
 
