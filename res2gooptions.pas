@@ -37,6 +37,7 @@ type
     FGoEnabledFinalizerOn: Boolean;
     FGoRoot: string;
     FGoTags: string;
+    FGoUseEmbed: Boolean;
     FGoUseTempdll: Boolean;
     FOutLang: TOutLang;
     FOutputPath: string;
@@ -53,6 +54,7 @@ type
     procedure SetGoEnabledFinalizerOn(AValue: Boolean);
     procedure SetGoRoot(AValue: string);
     procedure SetGoTags(AValue: string);
+    procedure SetGoUseEmbed(AValue: Boolean);
     procedure SetGoUseTempdll(AValue: Boolean);
     procedure SetOutLang(AValue: TOutLang);
     procedure SetOutputPath(AValue: string);
@@ -80,6 +82,7 @@ type
     property GoEnabledCGO: Boolean read FGoEnabledCGO write SetGoEnabledCGO;
     property GoBuildMode: string read FGoBuildMode write SetGoBuildMode;
     property GoRoot: string read FGoRoot write SetGoRoot;
+    property GoUseEmbed: Boolean read FGoUseEmbed write SetGoUseEmbed;
   end;
 
   { TRes2goOptionsFrame }
@@ -87,6 +90,7 @@ type
   TRes2goOptionsFrame = class(TAbstractIDEOptionsEditor)
     cbbLangs: TComboBox;
     chkGoEnabledCGO: TCheckBox;
+    chkGoUseEmbed: TCheckBox;
     chkGoUseTempdll: TCheckBox;
     chkGoEnabledFinalizerOn: TCheckBox;
     chkEanbledConvert: TCheckBox;
@@ -182,6 +186,13 @@ begin
   Changed;
 end;
 
+procedure TProjectRes2goRes.SetGoUseEmbed(AValue: Boolean);
+begin
+  if FGoUseEmbed=AValue then Exit;
+  FGoUseEmbed:=AValue;
+  Changed;
+end;
+
 procedure TProjectRes2goRes.SetGoUseTempdll(AValue: Boolean);
 begin
   if FGoUseTempdll=AValue then Exit;
@@ -258,6 +269,7 @@ begin
     SetDeleteValue(Path+'Res2go/GoEnabledCGO/Value', GoEnabledCGO, DefaultCGOValue);
     SetDeleteValue(Path+'Res2go/GoBuildMode/Value', GoBuildMode, '');
     SetDeleteValue(Path+'Res2go/GoRoot/Value', GoRoot, '');
+    SetDeleteValue(Path+'Res2go/GoUseEmbed/Value', GoUseEmbed, False);
   end;
 end;
 
@@ -280,6 +292,7 @@ begin
     GoEnabledCGO := {$ifndef windows}True{$else}GetValue(Path+'Res2go/GoEnabledCGO/Value', False){$endif};
     GoBuildMode := GetValue(Path+'Res2go/GoBuildMode/Value', '');
     GoRoot := Trim(GetValue(Path+'Res2go/GoRoot/Value', GetEnvironmentVariable('GOROOT')));
+    GoUseEmbed := GetValue(Path+'Res2go/GoUseEmbed/Value', False);
   end;
 
   if Assigned(MyIDEIntf) then
@@ -298,6 +311,7 @@ begin
     MyIDEIntf.GoEnabledCGO := GoEnabledCGO;
     MyIDEIntf.GoBuildMode := GoBuildMode;
     MyIDEIntf.GoRoot := GoRoot;
+    MyIDEIntf.GoUseEmbed := GoUseEmbed;
   end;
 end;
 
@@ -346,6 +360,7 @@ begin
   chkGoEnabledCGO.Caption:=rsGoEnabledCGO;
   Label2.Caption := rsBuildMode;
   lblBuildModeHint.Caption := rsBuildModeHint;
+  chkGoUseEmbed.Caption:=rsGoEnabledEmbed;
 {$ifndef windows}
   chkGoEnabledCGO.Enabled := False;
   chkGoEnabledCGO.Checked := True;
@@ -374,6 +389,7 @@ begin
       MyIDEIntf.GoEnabledCGO :=LRes.GoEnabledCGO;
       MyIDEIntf.GoBuildMode := LRes.GoBuildMode;
       MyIDEIntf.GoRoot := LRes.GoRoot;
+      MyIDEIntf.GoUseEmbed:=LRes.GoUseEmbed;
 
 
       chkEanbledConvert.Checked := MyIDEIntf.EnabledConvert;
@@ -389,6 +405,7 @@ begin
       chkGoEnabledCGO.Checked:=LRes.GoEnabledCGO;
       cbbGoBuildModes.ItemIndex:=cbbGoBuildModes.Items.IndexOf(LRes.GoBuildMode);
       edtGoRoot.Text := Trim(LRes.GoRoot);
+      chkGoUseEmbed.Checked:=LRes.GoUseEmbed;
     end;
   end;
 end;
@@ -421,6 +438,7 @@ begin
       else
         MyIDEIntf.GoBuildMode := '';
       MyIDEIntf.GoRoot := Trim(edtGoRoot.Text);
+      MyIDEIntf.GoUseEmbed:=chkGoUseEmbed.Checked;
 
      // MyIDEIntf.GoBuildMode:= IfThen(cbbGoBuildModes.ItemIndex >= 0, cbbGoBuildModes.Items[cbbGoBuildModes.ItemIndex], '');   ???????
 
@@ -439,6 +457,7 @@ begin
       LRes.GoEnabledCGO:=MyIDEIntf.GoEnabledCGO;
       LRes.GoBuildMode:=MyIDEIntf.GoBuildMode;
       LRes.GoRoot:= MyIDEIntf.GoRoot;
+      LRes.GoUseEmbed:=MyIDEIntf.GoUseEmbed;
     end;
   end;
 end;

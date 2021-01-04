@@ -37,6 +37,7 @@ resourceString
   rsGoEnabledCGO = 'Enabled CGO';
   rsBuildMode = 'Build mode: ';
   rsBuildModeHint = 'If go version>=1.15, please select "exe" mode, otherwise, no need to select.';
+  rsGoEnabledEmbed = 'Use "go:embed"(go1.16+)';
 
 implementation
 

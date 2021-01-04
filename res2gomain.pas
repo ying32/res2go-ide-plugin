@@ -57,6 +57,7 @@ type
     FGoEnabledFinalizerOn: Boolean;
     FGoRoot: string;
     FGoTags: string;
+    FGoUseEmbed: Boolean;
     FGoUseTempdll: Boolean;
     FOutLang: TOutLang;
     FOutputPath: string;
@@ -133,6 +134,7 @@ type
     property GoEnabledCGO: Boolean read FGoEnabledCGO write FGoEnabledCGO;
     property GoBuildMode: string read FGoBuildMode write FGoBuildMode;
     property GoRoot: string read FGoRoot write FGoRoot;
+    property GoUseEmbed: Boolean read FGoUseEmbed write FGoUseEmbed;
 
 
     property DefaultProjectParam: TProjParam read GetDefaultProjectParam;
@@ -228,11 +230,15 @@ begin
       else
         LOutFileName += ADesigner.LookupRoot.Name;
 
+      //
+      if OutLang = olGo then
+        TGoLang(Lang).UseGoEmbed:= GoUseEmbed;
+
       // 保存文件
       Lang.SaveToFile(LOutFileName, ADesigner.LookupRoot, FEvents, LStream);
 
-      // 保存gfm文件
-      if Self.SaveGfmFile then
+      // 保存gfm文件，条件为勾选启用保存Gfm文件或者使用go:embed特性
+      if Self.SaveGfmFile or ((OutLang = olGo) and GoUseEmbed) then
       begin
         LGfmFileName := AOutPath;
         if Self.UseOriginalFileName then

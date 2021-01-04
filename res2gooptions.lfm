@@ -235,6 +235,14 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       MaxLength = 0
       TabOrder = 5
     end
+    object chkGoUseEmbed: TCheckBox
+      Left = 480
+      Height = 21
+      Top = 30
+      Width = 190
+      Caption = 'Use go:embed(go1.16+)'
+      TabOrder = 6
+    end
   end
   object Panel3: TPanel
     Left = 0

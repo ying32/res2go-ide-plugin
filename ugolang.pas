@@ -31,6 +31,7 @@ type
 
   TGoLang = class(TLangBase)
   private
+    FUseGoEmbed: Boolean;
     function ParamTypeCov(ASrc: string): string;
     function IsBaseType(AType: string): Boolean;
     function IsInterfaceType(AType: string): Boolean;
@@ -57,6 +58,8 @@ type
     function ToEventString(AProp: PPropInfo): string; override;
     procedure SaveToFile(AFileName: string; ARoot: TComponent; AEvents: array of TEventItem; AMem: TMemoryStream); override;
     procedure ConvertResource(const AResFileName, APath: string); override;
+
+    property UseGoEmbed: Boolean read FUseGoEmbed write FUseGoEmbed;
   end;
 
 var
@@ -311,6 +314,8 @@ begin
     WLine;
     WLine('import (');
     WLine('    "github.com/ying32/govcl/vcl"');
+    if UseGoEmbed then
+      WLine('    _ "embed"');
     WLine(')');
     WLine;
     LFormName := ARoot.Name;
@@ -383,7 +388,9 @@ begin
       WLine;
     end;
     WLine;
+
     begin
+
       LVarName := LFormName + 'Bytes';
 
       // 包名不为main时，起始不变为小写。
@@ -406,15 +413,22 @@ begin
       WLine('}');
       WLine('');
 
-
-      LBuffer.WriteString(Format('var %s = []byte("', [LVarName]));
-      for I := 0 to AMem.Size - 1 do
+      // 嵌入资源
+      if UseGoEmbed then
       begin
-        LBuffer.WriteString('\x');
-        LBuffer.WriteString(PByte(PByte(AMem.Memory) + I)^.ToHexString(2));
+        WLine('//go:embed ' + ChangeFileExt(ExtractFileName(AFileName), '.gfm'));
+        WLine(Format('var %s []byte', [LVarName]));
+      end else
+      begin
+        LBuffer.WriteString(Format('var %s = []byte("', [LVarName]));
+        for I := 0 to AMem.Size - 1 do
+        begin
+          LBuffer.WriteString('\x');
+          LBuffer.WriteString(PByte(PByte(AMem.Memory) + I)^.ToHexString(2));
+        end;
+        LBuffer.WriteString('")');
+        WLine(LBuffer.DataString);
       end;
-      LBuffer.WriteString('")');
-      WLine(LBuffer.DataString);
 
       WLine('');
       WLine('// ' + rsRegisterFormResources);

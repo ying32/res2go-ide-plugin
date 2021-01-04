@@ -37,6 +37,10 @@ msgstr ""
 msgid "Enabled CGO"
 msgstr ""
 
+#: res2goresources.rsgoenabledembed
+msgid "Use \"go:embed\"(go1.16+)"
+msgstr ""
+
 #: res2goresources.rsgoenabledfinalizeron
 msgid "Enabled \"finalizerOn\""
 msgstr ""
