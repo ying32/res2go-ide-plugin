@@ -89,6 +89,7 @@ var
   LLdFlags: string = '';
   LBuildMode: string = '';
   LPaths: string;
+  LIParams: string;
 begin
   Result := False;
   if not Assigned(RunExternalTool) then
@@ -136,7 +137,10 @@ begin
     LBuildMode := ' -buildmode=' + AParams.GoBuildMode;
 
   // command line
-  LCmd := Format('build -i%s%s%s -o "%s"', [LBuildMode, LLdFlags, LTags, AParams.Output]);
+  LIParams := '';
+  if UseGoEmbed then // 1.16不支持-i参数了
+    LIParams := '-i';
+  LCmd := Format('build %s%s%s%s -o "%s"', [LIParams, LBuildMode, LLdFlags, LTags, AParams.Output]);
   LCmd2 := 'go ' + LCmd;
   Logs('Complie Command: ' + LCmd2);
   LTool := TIDEExternalToolOptions.Create;
@@ -416,7 +420,7 @@ begin
       // 嵌入资源
       if UseGoEmbed then
       begin
-        WLine('//go:embed ' + ChangeFileExt(ExtractFileName(AFileName), '.gfm'));
+        WLine('//go:embed resources/' + ChangeFileExt(ExtractFileName(AFileName), '.gfm'));
         WLine(Format('var %s []byte', [LVarName]));
       end else
       begin

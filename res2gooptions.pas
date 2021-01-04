@@ -12,15 +12,9 @@ unit res2goOptions;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, EditBtn,  StrUtils,
-  IDEOptionsIntf,
-  IDEOptEditorIntf,
-  LazIDEIntf,
-  ProjectIntf,
-  ProjectResourcesIntf,
-  res2goresources,
-  Laz2_XMLCfg, DividerBevel,
-  uSupports;
+  Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, EditBtn, ActnList,
+  StrUtils, IDEOptionsIntf, IDEOptEditorIntf, LazIDEIntf, ProjectIntf,
+  ProjectResourcesIntf, res2goresources, Laz2_XMLCfg, DividerBevel, uSupports;
 
 type
 
@@ -88,6 +82,8 @@ type
   { TRes2goOptionsFrame }
 
   TRes2goOptionsFrame = class(TAbstractIDEOptionsEditor)
+    actSaveGfm: TAction;
+    ActionList1: TActionList;
     cbbLangs: TComboBox;
     chkGoEnabledCGO: TCheckBox;
     chkGoUseEmbed: TCheckBox;
@@ -114,6 +110,8 @@ type
     Panel2: TPanel;
     Panel3: TPanel;
     Panel4: TPanel;
+    procedure actSaveGfmExecute(Sender: TObject);
+    procedure actSaveGfmUpdate(Sender: TObject);
     procedure FrameClick(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
@@ -325,6 +323,16 @@ begin
 
 end;
 
+procedure TRes2goOptionsFrame.actSaveGfmExecute(Sender: TObject);
+begin
+  //
+end;
+
+procedure TRes2goOptionsFrame.actSaveGfmUpdate(Sender: TObject);
+begin
+  TAction(Sender).Enabled:=not chkGoUseEmbed.Checked;
+end;
+
 constructor TRes2goOptionsFrame.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -344,7 +352,8 @@ procedure TRes2goOptionsFrame.Setup(ADialog: TAbstractOptionsEditorDialog);
 begin
   chkEanbledConvert.Caption:=rsEnabledConvert;
   chkUseOriginalFileName.Caption:=rsUseOriginalFileName;
-  chkSaveGfmFile.Caption := rsSaveGfmFile;
+  //chkSaveGfmFile.Caption := rsSaveGfmFile;
+  actSaveGfm.Caption:=rsSaveGfmFile;
   lblOutputPath.EditLabel.Caption:=rsOutputPath;
   Label1.Caption:=rsOutputPathEg;
   lblOutLang.Caption:=rsOutputLang;

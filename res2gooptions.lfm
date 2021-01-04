@@ -63,7 +63,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Height = 21
       Top = 23
       Width = 99
-      Caption = 'Save gfm File'
+      Action = actSaveGfm
       TabOrder = 3
     end
     object lblOutLang: TLabel
@@ -239,7 +239,7 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Left = 480
       Height = 21
       Top = 30
-      Width = 190
+      Width = 165
       Caption = 'Use go:embed(go1.16+)'
       TabOrder = 6
     end
@@ -294,6 +294,15 @@ object Res2goOptionsFrame: TRes2goOptionsFrame
       Font.Style = [fsBold]
       ParentFont = False
       Style = gsHorLines
+    end
+  end
+  object ActionList1: TActionList
+    Left = 512
+    Top = 63
+    object actSaveGfm: TAction
+      Caption = 'Save gfm File'
+      OnExecute = actSaveGfmExecute
+      OnUpdate = actSaveGfmUpdate
     end
   end
 end

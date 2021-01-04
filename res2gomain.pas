@@ -240,7 +240,10 @@ begin
       // 保存gfm文件，条件为勾选启用保存Gfm文件或者使用go:embed特性
       if Self.SaveGfmFile or ((OutLang = olGo) and GoUseEmbed) then
       begin
-        LGfmFileName := AOutPath;
+        LGfmFileName := AppendPathDelim(AppendPathDelim(AOutPath) + 'resources');
+        if not SysUtils.DirectoryExists(LGfmFileName) then
+          SysUtils.CreateDir(LGfmFileName);
+
         if Self.UseOriginalFileName then
           LGfmFileName += AUnitFileName
         else
