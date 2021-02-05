@@ -88,7 +88,7 @@ var
   LIsWindows: Boolean = False;
   LLdFlags: string = '';
   LBuildMode: string = '';
-  LPaths: string;
+  LPaths, LGoRoot: string;
   LIParams: string;
 begin
   Result := False;
@@ -148,7 +148,10 @@ begin
     LTool.Title := LCmd2;
     LTool.Hint := LCmd2;
     // 这里要全路径，不然macOS下执行有问题
-    LTool.Executable := AppendPathDelim(AppendPathDelim(AParams.GoRoot) + 'bin') + 'go'{$ifdef windows}+'.exe'{$endif};
+    LGoRoot := AppendPathDelim(AppendPathDelim(AParams.GoRoot) + 'bin');
+    if not SysUtils.DirectoryExists(LGoRoot) then
+      LGoRoot := '';
+    LTool.Executable := LGoRoot + 'go'{$ifdef windows}+'.exe'{$endif};
     LTool.WorkingDirectory := AParams.Input;
     LTool.CmdLineParams := LCmd;
     //Application.GetEnvironmentList(LTool.EnvironmentOverrides);
