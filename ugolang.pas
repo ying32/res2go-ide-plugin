@@ -138,7 +138,7 @@ begin
 
   // command line
   LIParams := '';
-  if UseGoEmbed then // 1.16不支持-i参数了
+  if not UseGoEmbed then // 1.16不支持-i参数了
     LIParams := '-i';
   LCmd := Format('build %s%s%s%s -o "%s"', [LIParams, LBuildMode, LLdFlags, LTags, AParams.Output]);
   LCmd2 := 'go ' + LCmd;
