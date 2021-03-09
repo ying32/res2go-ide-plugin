@@ -303,13 +303,20 @@ var
     Result := ARoot is TCustomFrame;
   end;
 
+  function ConvertClassName(const ASrc: string): string;
+  begin
+    Result := ASrc;
+    if Result = 'TCalendar' then
+      Result := 'TMonthCalendar';
+  end;
+
 var
   I, LMaxLen: integer;
   C: TComponent;
   LVarName, LFormName, LTempName: string;
   LItem: TEventItem;
   LFindEvent: boolean;
-  LReadEventName: string;
+  LRealEventName: string;
   LIsFrame: boolean;
 begin
   LStrStream := TStringStream.Create('');
@@ -356,7 +363,7 @@ begin
       end;
       //CtlWriteln('%s: %s', [C^.Name, C^.ClassName]);
       // 这里查找下，当前组件有事件，但是这个事件是共享的。
-      LReadEventName := '';
+      LRealEventName := '';
       LFindEvent := False;
       for LItem in AEvents do
       begin
@@ -366,20 +373,20 @@ begin
           if C.Name + LItem.EventTypeName <> LItem.EventName then
           begin
             LFindEvent := True;
-            if LReadEventName <> '' then
-              LReadEventName := LReadEventName + ',';
-            LReadEventName := LReadEventName + 'On' + LItem.EventName;
+            if LRealEventName <> '' then
+              LRealEventName := LRealEventName + ',';
+            LRealEventName := LRealEventName + 'On' + LItem.EventName;
           end;
         end;
       end;
       // CtlWriteln('LReadEventName: %s', [LReadEventName]);
 
       LTempName := Copy(C.Name + DupeString(#32, LMaxLen), 1, LMaxLen);
-      if LFindEvent and (LReadEventName <> '') then
+      if LFindEvent and (LRealEventName <> '') then
         WLine(Format('    %s *%s.%s `events:"%s"`',
-          [LTempName, 'vcl', C.ClassName, LReadEventName]))
+          [LTempName, 'vcl', ConvertClassName(C.ClassName), LRealEventName]))
       else
-        WLine(Format('    %s *%s.%s', [LTempName, 'vcl', C.ClassName]));
+        WLine(Format('    %s *%s.%s', [LTempName, 'vcl', ConvertClassName(C.ClassName)]));
     end;
     WLine;
     // 添加一个隐式字段，用于私有，方便写一些结构定自定义的变量什么的
