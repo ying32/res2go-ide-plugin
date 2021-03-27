@@ -466,7 +466,7 @@ end;
 
 procedure TGoLang.ConvertResource(const AResFileName, APath: string);
 const
-  PlatformStr: array[Boolean] of string = ('pe-x86-64', 'pe-i386');
+  PlatformStr: array[Boolean] of string = ('pe-i386', 'pe-x86-64');
 
 var
   LWindResFileName: string;
