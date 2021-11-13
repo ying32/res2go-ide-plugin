@@ -248,8 +248,9 @@ begin
   I := 0;
   for LFnParam in GetParams(AProp) do
   begin
-    if LFnParam.Name <> '$self' then
-    begin
+    //if LFnParam.Name <> '$self' then
+    if Pos('$', LFnParam.Name) = 0 then
+	begin
       if I > 1 then
         Result += ', ';
 
