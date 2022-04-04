@@ -157,7 +157,8 @@ begin
     'TFlowPanel', 'TCoolBar', 'TSpinEdit', 'TSpinEditEx',
     'TMiniWebview',
     'TTaskDialog', 'TCalendar', 'TComboBoxEx', 'TTimeEdit',
-    'TXButton', 'TToggleBox', 'TCheckGroup', 'TColorButton', 'TFloatSpinEdit', 'TDirectoryEdit'
+    'TXButton', 'TToggleBox', 'TCheckGroup', 'TColorButton', 'TFloatSpinEdit', 'TDirectoryEdit',
+    'TCheckComboBox'
     ]);
 end;
 

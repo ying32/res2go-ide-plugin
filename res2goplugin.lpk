@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
-  <Package Version="4">
+  <Package Version="5">
     <PathDelim Value="\"/>
     <Name Value="res2goplugin"/>
     <Type Value="RunAndDesignTime"/>
@@ -14,7 +14,7 @@
     </CompilerOptions>
     <Description Value="res2go IDE plug-in"/>
     <License Value="COPYING.modifiedLGPL"/>
-    <Version Major="1" Release="15"/>
+    <Version Major="1" Release="16"/>
     <Files Count="7">
       <Item1>
         <Filename Value="res2gomain.pas"/>
@@ -47,6 +47,7 @@
         <UnitName Value="res2goResources"/>
       </Item7>
     </Files>
+    <CompatibilityMode Value="True"/>
     <i18n>
       <EnableI18N Value="True"/>
       <OutDir Value="languages"/>
