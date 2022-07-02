@@ -391,7 +391,7 @@ begin
     end;
     WLine;
     // 添加一个隐式字段，用于私有，方便写一些结构定自定义的变量什么的
-    WLine('    ' + PrivateFiledsFlagStr); // 这是一个查找标识
+    WLine('    //' + PrivateFiledsFlagStr); // 这是一个查找标识
     WLine(Format('    ' + PrivateFiledsStr, [LFormName]));
     WLine('}');
     WLine;
@@ -596,7 +596,7 @@ begin
             LListStr.Insert(I, '');
             LListStr.Insert(I, '}');
             LListStr.Insert(I, 'type ' + LPrivateName + ' struct {');
-            LListStr.Insert(I, PrivateFiledsFlagStr);
+            LListStr.Insert(I, '//' + PrivateFiledsFlagStr);
             LListStr.Insert(I, '');
             Break;
           end;
@@ -609,7 +609,7 @@ begin
         for I := 0 to LListStr.Count - 1 do
         begin
           // 在首个func前几行插入
-          if Trim(LListStr[I]).CompareTo(PrivateFiledsFlagStr) = 0 then
+          if LListStr[I].Contains(PrivateFiledsFlagStr) and LListStr[I].Contains('//') then
           begin
             LListStr[I + 1] := 'type ' + LPrivateName + ' struct {';
             Break;

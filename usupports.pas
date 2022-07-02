@@ -31,7 +31,7 @@ type
   end;
 
 const
-  PrivateFiledsFlagStr = '//::private::';
+  PrivateFiledsFlagStr = '::private::';
   PrivateFiledsStr = 'T%sFields';
 
   //function IsZhLang: Boolean;
