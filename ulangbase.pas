@@ -51,6 +51,7 @@ type
     GoEnabledCGO: Boolean;
     GoBuildMode: string;
     GoRoot: string;
+    GoUseGoEmbed: Boolean;
   end;
 
   { TProjParam }

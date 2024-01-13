@@ -530,6 +530,7 @@ begin
       LParams.GoEnabledCGO:=Self.GoEnabledCGO;
       LParams.GoBuildMode:=Self.GoBuildMode;
       LParams.GoRoot:= Self.GoRoot;
+      LParams.GoUseGoEmbed:= Self.GoUseEmbed;
     end;
 
     LResult := False;
