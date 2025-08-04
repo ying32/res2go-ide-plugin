@@ -158,7 +158,7 @@ begin
     'TMiniWebview',
     'TTaskDialog', 'TCalendar', 'TComboBoxEx', 'TTimeEdit',
     'TXButton', 'TToggleBox', 'TCheckGroup', 'TColorButton', 'TFloatSpinEdit', 'TDirectoryEdit',
-    'TCheckComboBox'
+    'TCheckComboBox', 'TNoteBook', 'TPage', 'TButtonPanel', 'TPanelBitBtn'
     ]);
 end;
 

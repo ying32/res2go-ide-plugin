@@ -16,11 +16,20 @@ unit res2gomain;
 
 interface
 
+//{$MACRO ON}
+//
+//{$IF FPC_FULLVERSION >= 30200}
+//{$DEFINE SysUITypes:=System.UITypes}
+//{$ELSE}
+//{$DEFINE SysUITypes:=UITypes}
+//{$ENDIF}
+
 uses
   Classes,
   SysUtils,
   LCLType,
-  UITypes,
+  //SysUITypes,
+  Controls,
   StdCtrls,
   Buttons,
   Forms,
